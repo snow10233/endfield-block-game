@@ -1,6 +1,6 @@
 #pragma once
-#include "part.h"
 #include "board.h"
+#include "part.h"
 #include "postion.h"
 
 struct OneColorRule {

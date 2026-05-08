@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_library(core src/board.cpp)
+add_library(core src/board.cpp src/file-loader.cpp src/game.cpp src/part.cpp)
 target_include_directories(core PUBLIC include/)
 target_compile_features(core PUBLIC cxx_std_20)
 
@@ -14,5 +14,5 @@ target_compile_features(core PUBLIC cxx_std_20)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/tests
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-add_executable(main main.cpp)
+add_executable(main src/main.cpp)
 target_link_libraries(main PRIVATE core)

@@ -11,18 +11,13 @@ class Part {
   std::vector<std::vector<int>> shape;
 
  public:
-  Part(int _col, int _row, int _color, std::vector<std::vector<int>> _shape)
-      : col(_col), row(_row), color(_color), shape(_shape) {}
+  Part(int _col, int _row, int _color, std::vector<std::vector<int>> _shape);
 
-  void setCol(int c) {
-    if (c > 0) col = c;
-  }
+  void setCol(int c);
 
-  void setRow(int r) {
-    if (r > 0) row = r;
-  }
+  void setRow(int r);
 
-  void setMid(int x, int y) { mid.x = x, mid.y = y; }
+  void setMid(int x, int y);
 
   int getCol() const { return col; }
 
