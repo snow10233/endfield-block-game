@@ -1,7 +1,7 @@
 | Feature | Done | Points |
 |---|:---:|:---:|
-| 兩個 class - Part、Board | FALSE | 1 |
-| 讀單一顏色 + 顯示 | FALSE | 4 | 
+| 兩個 class - Part、Board | TRUE | 1 |
+| 讀單一顏色 + 顯示 | TRUE | 4 | 
 | w/a/s/d 移動 | FALSE | 5 | 
 | r 旋轉 | FALSE | 5 | 
 | Esc 拔掉 | FALSE | 1 | 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-A school-project mini-game inspired by Arknights: Endfield's 源石電路修復 (Originium Circuit Repair) — a polygon-block combination puzzle. Game-rules reference: `docs/public/pdf/明日方舟 終末地 源石電路修復.pdf`.
+A school-project mini-game inspired by Arknights: Endfield's 源石電路修復 (Originium Circuit Repair) — a Nonogram-like puzzle where polyomino pieces are placed onto a grid so that each row/column ends up with the required count of colored cells. **Win condition is binary (满足 the row/column counts ⇒ pass); there is no score.** Game-rules reference: `docs/public/pdf/project rule.pdf`.
 
 The user writes in Traditional Chinese and is comfortable with C++ but new to modern frontend tooling (Vue / TypeScript / Electron). Frame frontend explanations from a backend/systems perspective; prefer concrete examples over framework jargon.
 
@@ -20,14 +20,16 @@ endfield-block-game/
 
 ### Why this split is non-negotiable
 
-**C++ as the source of truth is a hard course requirement.** Do not suggest moving game logic, validation, scoring, level data, or solver code into TypeScript. The frontend exists purely to render state and forward user input.
+**C++ as the source of truth is a hard course requirement.** Do not suggest moving game logic, validation, win-check, level data, or solver code into TypeScript. The frontend exists purely to render state and forward user input.
+
+The course also grades an **auto-solver** (10%) and a **level designer** that exports to the config-file format (10%) — both of these belong in C++ as well.
 
 ### Drag-interaction split (important for performance)
 
 The polygon-piece drag UX has two phases that live in different processes:
 
 - **During drag** (per-frame, 60fps): visual follow stays in TS/Konva. Sending every mouse-move event to C++ would saturate IPC and cause lag.
-- **On drop** (one-shot): TS sends the final position to C++; C++ is the authority on legality, snapping, scoring, and level completion; result comes back and TS reconciles the visual state.
+- **On drop** (one-shot): TS sends the final position to C++; C++ is the authority on legality (no overlap, no out-of-bounds, not on a non-placeable cell), snapping to the grid, and the win-check (each row/column matches its required colored-cell count); result comes back and TS reconciles the visual state.
 
 This keeps the "C++ owns logic" contract intact (state authority is in C++) while keeping interaction smooth.
 
