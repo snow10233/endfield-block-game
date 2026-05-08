@@ -1,0 +1,11 @@
+node_modules
+dist
+out
+.DS_Store
+.eslintcache
+*.log*
+
+# Environment variables (keep .env.example tracked as a template)
+.env
+.env.*
+!.env.example

@@ -2,3 +2,21 @@
 build/
 dist/
 node_modules/
+.cache/
+
+# C++ build artifacts (when they escape build/)
+*.o
+*.obj
+*.exe
+*.out
+
+# CLion / JetBrains
+cmake-build-*/
+.idea/
+
+# Visual Studio
+.vs/
+
+# OS
+.DS_Store
+Thumbs.db
