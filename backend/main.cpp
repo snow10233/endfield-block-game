@@ -1,5 +1,18 @@
-#include <iostream>
+#include "game.h"
 
 using namespace std;
 
-int main() { cout << "Hello end-field!" << endl; }
+int main() {
+  Game game;
+  string testName = "tests/Example4.txt";
+  bool reset = false;
+
+  game.init(testName);
+  game.start();
+
+  if (reset) {
+    game.reset();
+  }
+
+  game.exit();
+}
