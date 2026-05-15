@@ -19,6 +19,9 @@ class Game {
   std::vector<Part> parts_;
   bool loaded_ = false;
 
+  // Rebuild board + parts from loader_'s current data.
+  void applyLoaded();
+
   // Apply level data (fixed pieces + blocked cells) to a freshly-resized board.
   void applyLevelToBoard();
 
@@ -36,6 +39,7 @@ class Game {
 
  public:
   bool load(const std::string& fileName);
+  bool loadFromString(const std::string& text);
   void reset();
 
   int getRows() const { return board_.getRows(); }

@@ -6,6 +6,7 @@ interface BackendApi {
 
 interface DialogApi {
   openLevel(): Promise<string | null>
+  saveLevel(text: string): Promise<string | null>
 }
 
 declare global {

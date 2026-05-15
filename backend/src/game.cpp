@@ -5,21 +5,26 @@
 
 bool Game::load(const std::string& fileName) {
   loader_.setFileName(fileName);
-  if (!loader_.load()) {
-    return false;
-  }
+  if (!loader_.load()) return false;
+  applyLoaded();
+  return true;
+}
 
+bool Game::loadFromString(const std::string& text) {
+  if (!loader_.loadFromString(text)) return false;
+  applyLoaded();
+  return true;
+}
+
+void Game::applyLoaded() {
   const GameDataPacket& data = loader_.getData();
   board_.resize(data.row, data.col);
-
   parts_.clear();
   for (const Part& src : data.partDatas) {
     parts_.push_back(src);  // fresh copy, un-placed
   }
-
   applyLevelToBoard();
   loaded_ = true;
-  return true;
 }
 
 void Game::reset() {

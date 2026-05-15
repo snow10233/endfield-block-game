@@ -138,6 +138,21 @@ app.whenReady().then(() => {
     return filePaths[0]
   })
 
+  ipcMain.handle('dialog:saveLevel', async (_event, text: string) => {
+    const defaultPath = app.isPackaged
+      ? join(process.resourcesPath, 'backend/tests', 'level.txt')
+      : resolve(__dirname, '../../../backend/tests', 'level.txt')
+    const { canceled, filePath } = await dialog.showSaveDialog({
+      title: '匯出關卡',
+      defaultPath,
+      filters: [{ name: 'Level files', extensions: ['txt'] }]
+    })
+    if (canceled || !filePath) return null
+    const { writeFile } = await import('fs/promises')
+    await writeFile(filePath, text, 'utf-8')
+    return filePath
+  })
+
   createWindow()
 
   app.on('activate', function () {

@@ -50,3 +50,17 @@ export interface SimpleOk {
   ok: boolean
   error?: string
 }
+
+export interface SolverPlacement {
+  pieceId: number
+  row: number
+  col: number
+  rot: number
+}
+
+export interface SolveResponse {
+  id: number
+  ok: boolean
+  error?: string
+  solution: SolverPlacement[]
+}

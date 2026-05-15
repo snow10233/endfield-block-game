@@ -3,6 +3,7 @@
 
 #include "game.h"
 #include "json.h"
+#include "solver.h"
 
 namespace {
 
@@ -179,6 +180,18 @@ int main() {
         payload.valueStr("failed to load file: " + path);
       }
       payload.endObject();
+    } else if (op == "loadString") {
+      std::string text = json_util::getStr(line, "text");
+      bool ok = game.loadFromString(text);
+      loaded = ok;
+      payload.beginObject();
+      payload.key("ok");
+      payload.valueBool(ok);
+      if (!ok) {
+        payload.key("error");
+        payload.valueStr("failed to parse level config");
+      }
+      payload.endObject();
     } else if (op == "state") {
       writeState(payload, game, loaded);
     } else if (op == "place") {
@@ -209,6 +222,33 @@ int main() {
       payload.beginObject();
       payload.key("ok");
       payload.valueBool(true);
+      payload.endObject();
+    } else if (op == "solve") {
+      Solver solver;
+      std::vector<SolverPlacement> sol;
+      bool ok = solver.solve(game, sol);
+      payload.beginObject();
+      payload.key("ok");
+      payload.valueBool(ok);
+      if (!ok) {
+        payload.key("error");
+        payload.valueStr("no solution found");
+      }
+      payload.key("solution");
+      payload.beginArray();
+      for (const SolverPlacement& sp : sol) {
+        payload.beginObject();
+        payload.key("pieceId");
+        payload.valueInt(sp.pieceId);
+        payload.key("row");
+        payload.valueInt(sp.row);
+        payload.key("col");
+        payload.valueInt(sp.col);
+        payload.key("rot");
+        payload.valueInt(sp.rotation);
+        payload.endObject();
+      }
+      payload.endArray();
       payload.endObject();
     } else if (op == "quit") {
       payload.beginObject();

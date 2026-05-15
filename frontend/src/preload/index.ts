@@ -10,6 +10,9 @@ const api = {
   dialog: {
     openLevel(): Promise<string | null> {
       return ipcRenderer.invoke('dialog:openLevel')
+    },
+    saveLevel(text: string): Promise<string | null> {
+      return ipcRenderer.invoke('dialog:saveLevel', text)
     }
   }
 }

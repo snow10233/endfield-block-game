@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, computed } from 'vue'
-import { useDrag, rotateShape, midOf } from '../store/drag'
+import { useDrag, midOf } from '../store/drag'
 import { useGame } from '../store/game'
 import { useViewport } from '../store/viewport'
 
@@ -50,40 +50,40 @@ onUnmounted(() => {
 
 const CELL_SIZE = 28
 const CELL_GAP = 2
+const STRIDE = CELL_SIZE + CELL_GAP
 
-const rotatedShape = computed(() => {
-  if (!drag.value) return null
-  return rotateShape(drag.value.baseShape, drag.value.rotation)
+// Mid of the base (un-rotated) shape — stays constant for the duration of a
+// drag. CSS rotation pivots around this cell so visual rotation feels
+// "anchored" to where the cursor is.
+const baseMid = computed(() => {
+  if (!drag.value) return { row: 0, col: 0 }
+  return midOf(drag.value.baseShape)
 })
 
-const mid = computed(() => {
-  const s = rotatedShape.value
-  if (!s) return { row: 0, col: 0 }
-  return midOf(s)
-})
-
-// drag.x / drag.y are now in design-space (stage-local) coords.
-// Preview is `position: absolute` inside the stage, so its left/top are
-// design-space too — and the visual scale comes from the stage's transform.
 const previewStyle = computed(() => {
   if (!drag.value) return {}
-  const offsetX = drag.value.x - mid.value.col * (CELL_SIZE + CELL_GAP) - CELL_SIZE / 2
-  const offsetY = drag.value.y - mid.value.row * (CELL_SIZE + CELL_GAP) - CELL_SIZE / 2
+  const m = baseMid.value
+  const leftPx = drag.value.x - m.col * STRIDE - CELL_SIZE / 2
+  const topPx = drag.value.y - m.row * STRIDE - CELL_SIZE / 2
+  const originX = m.col * STRIDE + CELL_SIZE / 2
+  const originY = m.row * STRIDE + CELL_SIZE / 2
   return {
-    left: `${offsetX}px`,
-    top: `${offsetY}px`
+    left: `${leftPx}px`,
+    top: `${topPx}px`,
+    transform: `rotate(${drag.value.rotationCount * 90}deg)`,
+    transformOrigin: `${originX}px ${originY}px`
   }
 })
 </script>
 
 <template>
   <div
-    v-if="drag && rotatedShape"
+    v-if="drag"
     class="drag-preview"
     :style="previewStyle"
     :data-color="drag.color"
   >
-    <div v-for="(row, r) in rotatedShape" :key="r" class="row">
+    <div v-for="(row, r) in drag.baseShape" :key="r" class="row">
       <div
         v-for="(v, c) in row"
         :key="c"
@@ -101,6 +101,10 @@ const previewStyle = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  /* transform changes (rotation) animate; left/top jump instantly per frame */
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* slight brightness boost so the dragged piece pops vs placed ones */
+  filter: brightness(1.1) saturate(1.15);
 }
 .row {
   display: flex;
@@ -114,20 +118,20 @@ const previewStyle = computed(() => {
   background: linear-gradient(180deg, var(--top, #98c52a) 0%, var(--mid, #7ba620) 50%, var(--bot, #6a8e1c) 100%);
   box-shadow:
     inset 0 0 0 1px var(--stroke, #c1ec3e),
-    inset 0 2px 0 rgba(255, 255, 255, 0.18),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2),
     inset 0 -2px 0 rgba(0, 0, 0, 0.35);
-  opacity: 0.9;
+  opacity: 0.95;
 }
 .drag-preview[data-color='0'] {
-  --top: #98c52a;
-  --mid: #7ba620;
-  --bot: #6a8e1c;
-  --stroke: #c1ec3e;
+  --top: #b8e835;
+  --mid: #98c52a;
+  --bot: #7ba620;
+  --stroke: #d8f96a;
 }
 .drag-preview[data-color='1'] {
-  --top: #4ca8c4;
-  --mid: #347a92;
-  --bot: #275f76;
-  --stroke: #7ed0e6;
+  --top: #6cd0e8;
+  --mid: #4ca8c4;
+  --bot: #347a92;
+  --stroke: #a0e0f0;
 }
 </style>

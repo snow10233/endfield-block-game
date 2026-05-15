@@ -2,10 +2,10 @@
 import { computed, ref } from 'vue'
 import CountIndicator from './CountIndicator.vue'
 import { useGame } from '../store/game'
-import { useDrag, rotateShape, midOf } from '../store/drag'
+import { useDrag, rotateShape, midOf, rotatePos } from '../store/drag'
 import { useViewport } from '../store/viewport'
 
-const { state, place } = useGame()
+const { state, place, solution, showHint, lastPlacedId } = useGame()
 const { drag, start: startDrag, end: endDrag } = useDrag()
 const { scale, toStageLocal } = useViewport()
 
@@ -85,11 +85,15 @@ async function onGridMouseUp(e: MouseEvent): Promise<void> {
   const hit = cellAt(e.clientX, e.clientY)
   endDrag()
   if (!hit) return // drop outside the board — nothing happens
-  // compute top-left of rotated shape from mid cell
-  const shape = rotateShape(d.baseShape, d.rotation)
-  const m = midOf(shape)
-  const topRow = hit.row - m.row
-  const topCol = hit.col - m.col
+  // Anchor on the base mid (the cell the visual rotates around). Map it
+  // through `rotation` 90° turns to get its position in the rotated shape
+  // — that's the offset from top-left to the cursor cell.
+  const baseMid = midOf(d.baseShape)
+  const baseRows = d.baseShape.length
+  const baseCols = d.baseShape[0]?.length ?? 0
+  const anchor = rotatePos(baseMid, baseRows, baseCols, d.rotation)
+  const topRow = hit.row - anchor.row
+  const topCol = hit.col - anchor.col
   await place(d.pieceId, topRow, topCol, d.rotation)
 }
 
@@ -119,9 +123,12 @@ const previewCells = computed<PreviewCellSet | null>(() => {
   const s = state.value
   if (!d || !h || !s) return null
   const shape = rotateShape(d.baseShape, d.rotation)
-  const m = midOf(shape)
-  const topRow = h.row - m.row
-  const topCol = h.col - m.col
+  const baseMid = midOf(d.baseShape)
+  const baseRows = d.baseShape.length
+  const baseCols = d.baseShape[0]?.length ?? 0
+  const anchor = rotatePos(baseMid, baseRows, baseCols, d.rotation)
+  const topRow = h.row - anchor.row
+  const topCol = h.col - anchor.col
   const result = new Set<number>()
   let ok = true
   for (let r = 0; r < shape.length; r++) {
@@ -146,6 +153,34 @@ const previewCells = computed<PreviewCellSet | null>(() => {
 function isPreviewCell(r: number, c: number): boolean {
   if (!previewCells.value || !state.value) return false
   return previewCells.value.cells.has(r * state.value.cols + c)
+}
+
+// Solver hint: map of board cell -> color of the piece that should go there.
+const hintMap = computed<Map<number, number>>(() => {
+  const m = new Map<number, number>()
+  if (!showHint.value || !solution.value || !state.value) return m
+  const s = state.value
+  for (const sp of solution.value) {
+    const piece = s.pieces.find((p) => p.id === sp.pieceId)
+    if (!piece) continue
+    const shape = rotateShape(piece.baseShape, sp.rot)
+    for (let r = 0; r < shape.length; r++) {
+      for (let c = 0; c < shape[r].length; c++) {
+        if (shape[r][c] !== 1) continue
+        const br = sp.row + r
+        const bc = sp.col + c
+        if (br < 0 || br >= s.rows || bc < 0 || bc >= s.cols) continue
+        m.set(br * s.cols + bc, piece.color)
+      }
+    }
+  }
+  return m
+})
+
+function hintColor(r: number, c: number): number | null {
+  if (!state.value) return null
+  const v = hintMap.value.get(r * state.value.cols + c)
+  return v ?? null
 }
 </script>
 
@@ -199,7 +234,9 @@ function isPreviewCell(r: number, c: number): boolean {
             info.kind,
             {
               preview: isPreviewCell(r, c),
-              'preview-bad': isPreviewCell(r, c) && previewCells && !previewCells.ok
+              'preview-bad': isPreviewCell(r, c) && previewCells && !previewCells.ok,
+              settling:
+                info.kind === 'movable' && lastPlacedId !== null && info.pieceId === lastPlacedId
             }
           ]"
           :data-color="info.kind === 'fixed' || info.kind === 'movable' ? info.color : undefined"
@@ -216,6 +253,11 @@ function isPreviewCell(r: number, c: number): boolean {
             <circle cx="32" cy="32" r="14" fill="none" />
             <path d="M22 22 L42 42" />
           </svg>
+          <div
+            v-if="info.kind === 'empty' && hintColor(r, c) !== null"
+            class="hint"
+            :data-hint-color="hintColor(r, c)"
+          />
         </div>
       </template>
     </div>
@@ -352,5 +394,42 @@ function isPreviewCell(r: number, c: number): boolean {
 }
 .cell.preview-bad {
   outline-color: rgba(232, 80, 80, 0.7);
+}
+
+/* settle: brief scale + flash when a piece is freshly placed */
+@keyframes settle {
+  0% {
+    transform: scale(1.18);
+    filter: brightness(1.6);
+  }
+  60% {
+    transform: scale(0.96);
+    filter: brightness(1.1);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+.cell.settling {
+  animation: settle 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 1;
+}
+
+/* solver hint overlay (only on empty cells) */
+.hint {
+  position: absolute;
+  inset: 4px;
+  border-radius: 3px;
+  pointer-events: none;
+  opacity: 0.4;
+}
+.hint[data-hint-color='0'] {
+  background: #b8e835;
+  box-shadow: inset 0 0 0 1px #d8f96a;
+}
+.hint[data-hint-color='1'] {
+  background: #4ec0e0;
+  box-shadow: inset 0 0 0 1px #82dcf2;
 }
 </style>

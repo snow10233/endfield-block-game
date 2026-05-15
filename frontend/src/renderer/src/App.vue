@@ -1,21 +1,58 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import GameBoard from './components/GameBoard.vue'
 import PiecePanel from './components/PiecePanel.vue'
 import DragLayer from './components/DragLayer.vue'
 import StartScreen from './components/StartScreen.vue'
+import LevelDesigner from './components/LevelDesigner.vue'
 import { useGame } from './store/game'
 import { useDrag } from './store/drag'
 import { useViewport, DESIGN_W, DESIGN_H } from './store/viewport'
+import { useAudio } from './store/audio'
 import bgImage from '@resources/board-background.png'
+import bgmSrc from '@resources/bgm.mp3'
 
 type Screen = 'start' | 'game' | 'designer'
 
+const HINT_DELAY_MS = 30_000
+
 const screen = ref<Screen>('start')
 
-const { state, lastError, lastErrorAt, load, reset, clear } = useGame()
+const {
+  state,
+  lastError,
+  lastErrorAt,
+  loadedAt,
+  showHint,
+  load,
+  loadString,
+  reset,
+  clear,
+  toggleHint
+} = useGame()
 const { cancel: cancelDrag } = useDrag()
 const { scale } = useViewport()
+const { muted: bgmMuted, toggle: toggleBgm, start: startBgm } = useAudio(bgmSrc)
+onMounted(() => startBgm())
+
+// 30-second gate before the hint becomes available on each new level.
+const hintUnlocked = ref(false)
+let hintTimer: number | null = null
+watch(loadedAt, (val) => {
+  if (hintTimer !== null) {
+    clearTimeout(hintTimer)
+    hintTimer = null
+  }
+  hintUnlocked.value = false
+  if (val > 0) {
+    hintTimer = window.setTimeout(() => {
+      hintUnlocked.value = true
+    }, HINT_DELAY_MS)
+  }
+})
+onUnmounted(() => {
+  if (hintTimer !== null) clearTimeout(hintTimer)
+})
 
 const errorMsg = computed(() => {
   if (!lastError.value) return null
@@ -41,6 +78,13 @@ function backToMenu(): void {
   cancelDrag()
   clear()
   screen.value = 'start'
+}
+
+async function onPlayDesigned(configText: string): Promise<void> {
+  await loadString(configText)
+  if (state.value?.loaded) {
+    screen.value = 'game'
+  }
 }
 </script>
 
@@ -75,20 +119,30 @@ function backToMenu(): void {
         <div class="topbar">
           <button class="bar-btn" @click="backToMenu">← 返回</button>
           <button class="bar-btn" @click="reset">重置</button>
+          <button
+            class="bar-btn"
+            :class="{ active: showHint }"
+            :disabled="!hintUnlocked"
+            :title="hintUnlocked ? '' : '30 秒後解鎖'"
+            @click="toggleHint"
+          >
+            {{ showHint ? '關閉提示' : '提示' }}
+          </button>
+          <button class="bar-btn" :title="bgmMuted ? '取消靜音' : '靜音'" @click="toggleBgm">
+            {{ bgmMuted ? '♪' : '♬' }}
+          </button>
         </div>
 
-        <transition name="fade">
+        <transition name="bounce">
           <div v-if="state?.won" class="win-banner">過關!</div>
         </transition>
       </div>
 
-      <div v-else-if="screen === 'designer'" class="designer">
-        <div class="placeholder">
-          <h2>關卡設計</h2>
-          <p>尚未實作</p>
-          <button class="bar-btn" @click="backToMenu">← 返回</button>
-        </div>
-      </div>
+      <LevelDesigner
+        v-else-if="screen === 'designer'"
+        @back="backToMenu"
+        @play="onPlayDesigned"
+      />
 
       <transition name="fade">
         <div v-if="errorMsg" class="error-banner">{{ errorMsg }}</div>
@@ -181,9 +235,18 @@ function backToMenu(): void {
   font-size: 14px;
   cursor: pointer;
 }
-.bar-btn:hover {
+.bar-btn:hover:not(:disabled) {
   background: rgba(30, 40, 60, 0.6);
   border-color: rgba(255, 255, 255, 0.25);
+}
+.bar-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.bar-btn.active {
+  background: rgba(184, 232, 53, 0.2);
+  border-color: rgba(184, 232, 53, 0.5);
+  color: #d8f96a;
 }
 
 .error-banner {
@@ -204,6 +267,7 @@ function backToMenu(): void {
   top: 40%;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 50;
   padding: 24px 48px;
   background: rgba(184, 232, 53, 0.92);
   color: #1a1f10;
@@ -251,5 +315,33 @@ function backToMenu(): void {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* win-banner uses a snappier scale-in bounce */
+.bounce-enter-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.45s cubic-bezier(0.34, 1.7, 0.64, 1);
+}
+.bounce-leave-active {
+  transition:
+    opacity 0.2s,
+    transform 0.2s ease-in;
+}
+.bounce-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) scale(0.4);
+}
+.bounce-enter-to {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+.bounce-leave-from {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+.bounce-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) scale(0.85);
 }
 </style>

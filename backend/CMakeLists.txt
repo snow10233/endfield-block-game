@@ -12,7 +12,7 @@ foreach(cfg IN ITEMS DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${cfg} ${CMAKE_BINARY_DIR})
 endforeach()
 
-add_library(core src/board.cpp src/file-loader.cpp src/game.cpp src/part.cpp)
+add_library(core src/board.cpp src/file-loader.cpp src/game.cpp src/part.cpp src/solver.cpp)
 target_include_directories(core PUBLIC include/)
 target_compile_features(core PUBLIC cxx_std_20)
 

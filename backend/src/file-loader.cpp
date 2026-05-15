@@ -9,15 +9,20 @@ void FileLoader::setFileName(std::string _fileName) { fileName = _fileName; }
 
 bool FileLoader::load() {
   std::ifstream input(fileName, std::ios::in);
+  if (input.fail()) return false;
+  return parse(input);
+}
 
-  if (input.fail()) {
-    return false;
-  }
+bool FileLoader::loadFromString(const std::string& text) {
+  std::istringstream input(text);
+  return parse(input);
+}
 
+bool FileLoader::parse(std::istream& input) {
   // Reset so consecutive loads don't accumulate into the old level's data.
   datas = GameDataPacket{};
 
-  input >> datas.colors >> datas.row >> datas.col;
+  if (!(input >> datas.colors >> datas.row >> datas.col)) return false;
 
   for (int i = 0; i < datas.colors; ++i) {
     OneColorRule Needs;

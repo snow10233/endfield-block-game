@@ -6,11 +6,14 @@ import { useDrag } from '../store/drag'
 import { useViewport } from '../store/viewport'
 import type { MovablePiece } from '../types/level'
 
-const { unplacedPieces, state, removePiece } = useGame()
+const { state, removePiece } = useGame()
 const { drag, start: startDrag, end: endDrag } = useDrag()
 const { toStageLocal } = useViewport()
 
+const allPieces = computed(() => state.value?.pieces ?? [])
+
 function onPieceMouseDown(e: MouseEvent, piece: MovablePiece): void {
+  if (piece.placed) return // can't grab a placeholder slot
   e.preventDefault()
   const p = toStageLocal(e.clientX, e.clientY)
   startDrag(piece, p.x, p.y)
@@ -46,9 +49,9 @@ const dropTargetActive = computed(() => {
     @mouseup="onPanelMouseUp"
   >
     <div
-      v-for="piece in unplacedPieces"
+      v-for="piece in allPieces"
       :key="piece.id"
-      class="slot"
+      :class="['slot', { placed: piece.placed }]"
       @mousedown="onPieceMouseDown($event, piece)"
     >
       <span class="slot-id">{{ piece.id }}</span>
@@ -96,9 +99,17 @@ const dropTargetActive = computed(() => {
   overflow: hidden;
   cursor: grab;
   user-select: none;
+  transition:
+    opacity 0.2s ease,
+    filter 0.2s ease;
 }
 .slot:active {
   cursor: grabbing;
+}
+.slot.placed {
+  cursor: default;
+  opacity: 0.25;
+  filter: grayscale(0.6);
 }
 .slot::before {
   content: '';
