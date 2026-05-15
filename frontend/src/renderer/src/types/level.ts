@@ -1,33 +1,52 @@
-// Level data types — mirror the C++ config-file format described in project rule.pdf.
-// Coordinates are (row, col), top-left = (0, 0).
-
 export type ColorIndex = number
 
-export interface PieceDef {
-  id: number
-  color: ColorIndex
-  // shape[row][col] = 1 if the piece occupies that cell, 0 otherwise.
-  // Dimensions M2 × N2.
-  shape: number[][]
-}
-
-export interface FixedPiece {
-  color: ColorIndex
+export interface BlockedCell {
   row: number
   col: number
 }
 
-export interface Level {
+export interface FixedPiece {
+  row: number
+  col: number
+  color: ColorIndex
+}
+
+export interface MovablePiece {
+  id: number
+  color: ColorIndex
+  baseShape: number[][] // shape[r][c] = 1 if filled
+  rotation: number // 0..3, each step 90° CW
+  placed: boolean
+  row: number // top-left of rotated bounding box; -1 if not placed
+  col: number
+}
+
+export interface GameState {
+  loaded: boolean
   colorCount: number
   rows: number
   cols: number
-  // rowCounts[color][r] = required filled cells of that color in row r
+  // [color][row|col] = required count
   rowCounts: number[][]
-  // colCounts[color][c] = required filled cells of that color in column c
   colCounts: number[][]
-  // Per-color list of immovable single-cell pieces already on the board.
+  // [color][row|col] = currently achieved count
+  rowFilled: number[][]
+  colFilled: number[][]
+  blockedCells: BlockedCell[]
   fixedPieces: FixedPiece[]
-  // Cells where no piece can be placed.
-  blockedCells: { row: number; col: number }[]
-  pieces: PieceDef[]
+  pieces: MovablePiece[]
+  won: boolean
+}
+
+export interface PlaceResponse {
+  id: number
+  ok: boolean
+  won: boolean
+  error?: string
+}
+
+export interface SimpleOk {
+  id: number
+  ok: boolean
+  error?: string
 }

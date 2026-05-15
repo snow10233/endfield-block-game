@@ -14,6 +14,9 @@ bool FileLoader::load() {
     return false;
   }
 
+  // Reset so consecutive loads don't accumulate into the old level's data.
+  datas = GameDataPacket{};
+
   input >> datas.colors >> datas.row >> datas.col;
 
   for (int i = 0; i < datas.colors; ++i) {
@@ -53,6 +56,7 @@ bool FileLoader::load() {
   }
 
   int color, row, col;
+  int nextId = 0;
 
   while (input >> color >> row >> col) {
     std::vector<std::vector<int>> shape;
@@ -64,7 +68,7 @@ bool FileLoader::load() {
       }
     }
 
-    datas.partDatas.push_back(Part(col, row, color, shape));
+    datas.partDatas.push_back(Part(nextId++, color, std::move(shape)));
   }
 
   return true;

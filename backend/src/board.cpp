@@ -1,41 +1,38 @@
 #include "board.h"
 
+void Board::resize(int rows, int cols) {
+  rows_ = rows;
+  cols_ = cols;
+  cells_.assign(rows, std::vector<Cell>(cols));
+}
+
+bool Board::inBounds(int row, int col) const {
+  return row >= 0 && row < rows_ && col >= 0 && col < cols_;
+}
+
 std::ostream& operator<<(std::ostream& os, const Board& b) {
-  for (int i = 0; i < b.row; ++i) {
-    for (int j = 0; j < b.col; ++j) {
-      os << b.board[i][j] << ' ';
+  for (int r = 0; r < b.rows_; ++r) {
+    for (int c = 0; c < b.cols_; ++c) {
+      const Cell& cell = b.cells_[r][c];
+      char ch = '_';
+      switch (cell.state) {
+        case CellState::Empty:
+          ch = '_';
+          break;
+        case CellState::Blocked:
+          ch = 'X';
+          break;
+        case CellState::Fixed:
+          ch = '=';
+          break;
+        case CellState::Movable:
+          ch = static_cast<char>('0' + cell.pieceId);
+          break;
+      }
+      os << ch;
+      if (c + 1 < b.cols_) os << ' ';
     }
-    os << std::endl;
+    os << '\n';
   }
   return os;
-}
-
-Board::Board() : col(-1), row(-1) {}
-
-Board::Board(int _col, int _row, std::vector<std::vector<char>> _board)
-    : col(_col), row(_row), board(_board) {}
-
-void Board::setCol(int c) {
-  if (c > 0) col = c;
-}
-
-void Board::setRow(int r) {
-  if (r > 0) row = r;
-}
-
-void Board::setBoard(const std::vector<std::vector<char>>& b) { board = b; }
-
-bool Board::setElement(int x, int y, char value) {
-  if (x >= 0 && x < col && y >= 0 && y < row) {
-    board[y][x] = value;
-    return true;
-  }
-  return false;
-}
-
-char Board::getElement(int x, int y) const {
-  if (x >= 0 && x < col && y >= 0 && y < row) {
-    return board[y][x];
-  }
-  return -1;  // Invalid position
 }

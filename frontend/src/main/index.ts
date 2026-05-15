@@ -1,13 +1,87 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
+import { join, resolve } from 'path'
+import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
+import { createInterface, Interface as ReadlineInterface } from 'readline'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+type PendingRequest = {
+  resolve: (value: unknown) => void
+  reject: (err: Error) => void
+}
+
+class BackendBridge {
+  private child: ChildProcessWithoutNullStreams | null = null
+  private rl: ReadlineInterface | null = null
+  private nextId = 1
+  private pending = new Map<number, PendingRequest>()
+
+  start(binaryPath: string, cwd: string): void {
+    this.child = spawn(binaryPath, [], { cwd, stdio: ['pipe', 'pipe', 'pipe'] })
+
+    this.child.stderr.on('data', (chunk: Buffer) => {
+      process.stderr.write(`[backend] ${chunk.toString()}`)
+    })
+
+    this.child.on('exit', (code) => {
+      console.log(`[backend] exited with code ${code}`)
+      for (const [, pending] of this.pending) {
+        pending.reject(new Error('backend exited'))
+      }
+      this.pending.clear()
+    })
+
+    this.rl = createInterface({ input: this.child.stdout })
+    this.rl.on('line', (line) => this.handleLine(line))
+  }
+
+  private handleLine(line: string): void {
+    try {
+      const obj = JSON.parse(line) as { id?: number }
+      if (typeof obj.id !== 'number') return
+      const pending = this.pending.get(obj.id)
+      if (!pending) return
+      this.pending.delete(obj.id)
+      pending.resolve(obj)
+    } catch (err) {
+      console.error('[backend] bad response line:', line, err)
+    }
+  }
+
+  call(op: string, args: Record<string, unknown> = {}): Promise<unknown> {
+    if (!this.child || this.child.killed)
+      return Promise.reject(new Error('backend not running'))
+    const id = this.nextId++
+    const payload = JSON.stringify({ id, op, ...args }) + '\n'
+    return new Promise((resolveFn, rejectFn) => {
+      this.pending.set(id, { resolve: resolveFn, reject: rejectFn })
+      this.child!.stdin.write(payload)
+    })
+  }
+
+  kill(): void {
+    if (this.child && !this.child.killed) {
+      this.child.kill()
+    }
+  }
+}
+
+const backend = new BackendBridge()
+
+function backendBinaryPath(): { bin: string; cwd: string } {
+  const exe = process.platform === 'win32' ? 'main.exe' : 'main'
+  if (app.isPackaged) {
+    const base = join(process.resourcesPath, 'backend')
+    return { bin: join(base, exe), cwd: base }
+  }
+  const backendDir = resolve(__dirname, '../../../backend')
+  return { bin: join(backendDir, 'build', exe), cwd: join(backendDir, 'build') }
+}
+
 function createWindow(): void {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1100,
+    height: 800,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -26,8 +100,6 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
@@ -35,40 +107,47 @@ function createWindow(): void {
   }
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  const { bin, cwd } = backendBinaryPath()
+  backend.start(bin, cwd)
+
+  ipcMain.handle('backend:call', async (_event, op: string, args: Record<string, unknown>) => {
+    return await backend.call(op, args)
+  })
+
+  ipcMain.handle('dialog:openLevel', async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      title: '選擇關卡檔案',
+      properties: ['openFile'],
+      filters: [
+        { name: 'Level files', extensions: ['txt'] },
+        { name: 'All files', extensions: ['*'] }
+      ],
+      defaultPath: resolve(__dirname, '../../../backend/tests')
+    })
+    if (canceled || filePaths.length === 0) return null
+    return filePaths[0]
+  })
 
   createWindow()
 
   app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
+app.on('before-quit', () => {
+  backend.kill()
+})
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.

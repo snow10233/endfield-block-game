@@ -1,24 +1,26 @@
 <script setup lang="ts">
-import type { PieceDef } from '../types/level'
+import type { MovablePiece } from '../types/level'
+import { computed } from 'vue'
+import { rotateShape } from '../store/drag'
 
-defineProps<{
-  piece: PieceDef
+const props = defineProps<{
+  piece: MovablePiece
   cellSize?: number
 }>()
+
+const shape = computed(() => rotateShape(props.piece.baseShape, props.piece.rotation))
 </script>
 
 <template>
   <div
     class="piece"
     :style="{
-      '--rows': piece.shape.length,
-      '--cols': piece.shape[0].length,
       '--cell-size': `${cellSize ?? 28}px`
     }"
     :data-color="piece.color"
   >
     <div
-      v-for="(row, r) in piece.shape"
+      v-for="(row, r) in shape"
       :key="r"
       class="piece-row"
     >

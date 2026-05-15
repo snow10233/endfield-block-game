@@ -33,14 +33,22 @@ The polygon-piece drag UX has two phases that live in different processes:
 
 This keeps the "C++ owns logic" contract intact (state authority is in C++) while keeping interaction smooth.
 
-### IPC plan (not yet implemented)
+### IPC plan
 
-Decided approach: **plain HTTP via `cpp-httplib`** in C++, called from Electron's main process with `fetch`. WebSocket was considered and rejected as overkill — the flow is single-player request/response.
+Decided approach: **NDJSON over stdin/stdout** between Electron main and the C++ child process. HTTP via `cpp-httplib` was considered and rejected — for a single-machine single-player game, a child-process pipe is simpler (no port management, no vendored networking library, child lifecycle tied to Electron's lifecycle).
 
-Operational requirements when wiring this up:
-- C++ binds **port 0** (OS-assigned) and writes the actual port to stdout. Electron's main process spawns the C++ child, reads stdout to learn the port, then exposes it to the renderer via preload. **Never hardcode a port** — collisions on user machines will brick the app.
+Wire format: one JSON object per line in each direction. Requests carry an `id` so async responses can be correlated.
+
+```
+→ {"id":1,"op":"place","pieceId":0,"row":0,"col":0,"rot":0}
+← {"id":1,"ok":true,"won":false}
+```
+
+Operational requirements:
+- Electron main spawns the C++ binary, reads `child.stdout` line-by-line, dispatches each response to the matching request promise.
 - Electron `app.on('before-quit')` must `child.kill()` the C++ process to avoid orphan processes.
 - Path to the C++ binary differs between dev and packaged builds: branch on `app.isPackaged` and use `process.resourcesPath` for the packaged case.
+- The renderer never touches the child directly — it calls preload functions, which `ipcRenderer.invoke` the main process, which talks to the child.
 
 For packaging, `electron-builder.yml` will need an `extraResources` entry to bundle the platform-specific C++ binary into the installer.
 
@@ -79,7 +87,7 @@ cmake --build build
 - `.npmrc` settings (`node-linker=hoisted`, `shamefully-hoist=true`) exist specifically for `electron-builder` compatibility with pnpm. Removing them will break packaging.
 - `electron.vite.config.ts` defines `@renderer` → `src/renderer/src` alias. Use it instead of long relative paths in renderer code; keep it in sync with `tsconfig.web.json` `paths` if you ever need new aliases.
 - `electron-builder.yml` currently uses placeholder `appId: com.electron.app` and `productName: frontend` from the scaffold — update before producing real release builds, but they're fine for development.
-- The C++ side intentionally has minimal scaffolding right now (`main.cpp` is a stub). Logic, level data, and the HTTP server are still to be built.
+- The C++ side intentionally has minimal scaffolding right now (`main.cpp` is a stub). Logic, level data, and the stdio request loop are still to be built.
 
 ## Out of scope for this project
 

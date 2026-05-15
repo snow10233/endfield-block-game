@@ -2,29 +2,28 @@
 #include <iostream>
 #include <vector>
 
+#include "cell.h"
+
+// Owns the M×N grid of `Cell`s. Pure state container — placement rules and
+// win-check live in Game.
 class Board {
   friend std::ostream& operator<<(std::ostream& os, const Board& b);
 
  private:
-  int col, row;
-  std::vector<std::vector<char>> board;
+  int rows_ = 0;
+  int cols_ = 0;
+  std::vector<std::vector<Cell>> cells_;
 
  public:
-  Board();
+  Board() = default;
 
-  Board(int _col, int _row, std::vector<std::vector<char>> _board);
+  void resize(int rows, int cols);
 
-  void setCol(int c);
+  int getRows() const { return rows_; }
+  int getCols() const { return cols_; }
 
-  void setRow(int r);
+  bool inBounds(int row, int col) const;
 
-  void setBoard(const std::vector<std::vector<char>>& b);
-
-  bool setElement(int x, int y, char value);
-
-  char getElement(int x, int y) const;
-
-  int getRow() const { return row; }
-
-  int getCol() const { return col; }
+  const Cell& at(int row, int col) const { return cells_[row][col]; }
+  Cell& at(int row, int col) { return cells_[row][col]; }
 };

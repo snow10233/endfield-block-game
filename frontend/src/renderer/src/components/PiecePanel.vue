@@ -1,13 +1,56 @@
 <script setup lang="ts">
-import type { Level } from '../types/level'
+import { computed } from 'vue'
 import PieceView from './PieceView.vue'
+import { useGame } from '../store/game'
+import { useDrag } from '../store/drag'
+import { useViewport } from '../store/viewport'
+import type { MovablePiece } from '../types/level'
 
-defineProps<{ level: Level }>()
+const { unplacedPieces, state, removePiece } = useGame()
+const { drag, start: startDrag, end: endDrag } = useDrag()
+const { toStageLocal } = useViewport()
+
+function onPieceMouseDown(e: MouseEvent, piece: MovablePiece): void {
+  e.preventDefault()
+  const p = toStageLocal(e.clientX, e.clientY)
+  startDrag(piece, p.x, p.y)
+}
+
+// If a piece that's currently on the board is dropped onto the panel, remove
+// it from the board (i.e., return it to inventory).
+async function onPanelMouseUp(): Promise<void> {
+  const d = drag.value
+  if (!d || !state.value) return
+  const piece = state.value.pieces.find((p) => p.id === d.pieceId)
+  if (!piece) return
+  // Always end the drag so the window-level fallback doesn't fire too.
+  endDrag()
+  if (piece.placed) {
+    await removePiece(d.pieceId)
+  }
+}
+
+// Visual cue: when dragging a piece that's currently placed, mark the panel
+// as a valid drop target.
+const dropTargetActive = computed(() => {
+  const d = drag.value
+  if (!d || !state.value) return false
+  const piece = state.value.pieces.find((p) => p.id === d.pieceId)
+  return !!piece?.placed
+})
 </script>
 
 <template>
-  <div class="piece-panel">
-    <div v-for="piece in level.pieces" :key="piece.id" class="slot">
+  <div
+    :class="['piece-panel', { 'drop-target': dropTargetActive }]"
+    @mouseup="onPanelMouseUp"
+  >
+    <div
+      v-for="piece in unplacedPieces"
+      :key="piece.id"
+      class="slot"
+      @mousedown="onPieceMouseDown($event, piece)"
+    >
       <span class="slot-id">{{ piece.id }}</span>
       <PieceView :piece="piece" />
     </div>
@@ -20,12 +63,21 @@ defineProps<{ level: Level }>()
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   padding: 10px;
+  min-height: 220px;
+  min-width: 240px;
+  align-content: start;
   border-radius: 8px;
   background:
     radial-gradient(ellipse at center, rgba(8, 12, 18, 0.5), rgba(4, 6, 10, 0.7));
   box-shadow:
     inset 0 2px 8px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.03);
+  transition: box-shadow 0.15s ease;
+}
+.piece-panel.drop-target {
+  box-shadow:
+    inset 0 0 0 2px rgba(184, 232, 53, 0.6),
+    inset 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 .slot {
   position: relative;
@@ -42,8 +94,12 @@ defineProps<{ level: Level }>()
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     inset 0 -1px 0 rgba(0, 0, 0, 0.4);
   overflow: hidden;
+  cursor: grab;
+  user-select: none;
 }
-/* same corner-bracket treatment as board cells */
+.slot:active {
+  cursor: grabbing;
+}
 .slot::before {
   content: '';
   position: absolute;
