@@ -1,26 +1,46 @@
 <script setup lang="ts">
-import Versions from './components/Versions.vue'
-
-const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
+import GameBoard from './components/GameBoard.vue'
+import PiecePanel from './components/PiecePanel.vue'
+import { example1 } from './data/example1'
+import bgImage from '@resources/board-background.png'
 </script>
 
 <template>
-  <img alt="logo" class="logo" src="./assets/electron.svg" />
-  <div class="creator">Powered by electron-vite</div>
-  <div class="text">
-    Build an Electron app with
-    <span class="vue">Vue</span>
-    and
-    <span class="ts">TypeScript</span>
+  <img class="bg" :src="bgImage" alt="" />
+  <div class="frost" />
+  <div class="stage">
+    <GameBoard :level="example1" />
+    <PiecePanel :level="example1" />
   </div>
-  <p class="tip">Please try pressing <code>F12</code> to open the devTool</p>
-  <div class="actions">
-    <div class="action">
-      <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">Documentation</a>
-    </div>
-    <div class="action">
-      <a target="_blank" rel="noreferrer" @click="ipcHandle">Send IPC</a>
-    </div>
-  </div>
-  <Versions />
 </template>
+
+<style scoped>
+.bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.frost {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: rgba(14, 18, 26, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+  padding: 40px;
+}
+</style>
