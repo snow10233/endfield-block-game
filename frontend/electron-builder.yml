@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: frontend
+appId: com.endfield.blockgame
+productName: EndfieldBlockGame
 directories:
   buildResources: build
 files:
@@ -9,10 +9,16 @@ files:
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+extraResources:
+  - from: ../backend/tests
+    to: backend/tests
 asarUnpack:
   - resources/**
 win:
-  executableName: frontend
+  executableName: EndfieldBlockGame
+  extraResources:
+    - from: ../backend/build/main.exe
+      to: backend/main.exe
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

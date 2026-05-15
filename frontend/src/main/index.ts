@@ -122,6 +122,9 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('dialog:openLevel', async () => {
+    const defaultPath = app.isPackaged
+      ? join(process.resourcesPath, 'backend/tests')
+      : resolve(__dirname, '../../../backend/tests')
     const { canceled, filePaths } = await dialog.showOpenDialog({
       title: '選擇關卡檔案',
       properties: ['openFile'],
@@ -129,7 +132,7 @@ app.whenReady().then(() => {
         { name: 'Level files', extensions: ['txt'] },
         { name: 'All files', extensions: ['*'] }
       ],
-      defaultPath: resolve(__dirname, '../../../backend/tests')
+      defaultPath
     })
     if (canceled || filePaths.length === 0) return null
     return filePaths[0]
