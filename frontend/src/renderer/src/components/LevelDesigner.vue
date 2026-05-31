@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue'
+import { reactive, ref, computed, watch, onUnmounted } from 'vue'
+import { backend } from '../api/backend'
 
 const emit = defineEmits<{
   back: []
@@ -27,6 +28,8 @@ interface Designer {
   colCounts: number[][] // [color][col]
   pieces: PieceEdit[]
 }
+
+type ValidationStatus = 'checking' | 'valid' | 'invalid'
 
 function emptyCell(): CellState {
   return { kind: 'empty', color: -1 }
@@ -132,8 +135,7 @@ function resizePiece(idx: number, rows: number, cols: number): void {
   const p = d.pieces[idx]
   const next = Array.from({ length: rows }, () => Array.from({ length: cols }, () => 0))
   for (let r = 0; r < Math.min(rows, p.shape.length); r++)
-    for (let c = 0; c < Math.min(cols, p.shape[r]?.length ?? 0); c++)
-      next[r][c] = p.shape[r][c]
+    for (let c = 0; c < Math.min(cols, p.shape[r]?.length ?? 0); c++) next[r][c] = p.shape[r][c]
   p.shape = next
 }
 
@@ -178,8 +180,83 @@ function buildConfig(): string {
 
 const showExport = ref(false)
 const exportText = computed(() => buildConfig())
+const validation = reactive<{
+  status: ValidationStatus
+  checkedConfig: string
+  message: string
+}>({
+  status: 'checking',
+  checkedConfig: '',
+  message: '檢查中...'
+})
+
+const canExport = computed(
+  () => validation.status === 'valid' && validation.checkedConfig === exportText.value
+)
+const validationText = computed(() => {
+  if (validation.status === 'valid' && validation.checkedConfig === exportText.value) {
+    return '此關卡可解，可輸出'
+  }
+  if (validation.status === 'checking') return '檢查關卡是否可解...'
+  return validation.message || '此關卡無解，暫不開放輸出'
+})
+
+let validateTimer: number | null = null
+let validateSeq = 0
+
+async function validateConfigNow(config = exportText.value): Promise<boolean> {
+  const seq = ++validateSeq
+  validation.status = 'checking'
+  validation.checkedConfig = ''
+  validation.message = '檢查中...'
+  try {
+    const result = await backend.validateLevelString(config)
+    if (seq !== validateSeq) return false
+    validation.checkedConfig = config
+    if (result.ok) {
+      validation.status = 'valid'
+      validation.message = '此關卡可解，可輸出'
+      return true
+    }
+    validation.status = 'invalid'
+    validation.message =
+      result.error === 'no solution found' ? '此關卡無解，暫不開放輸出' : '設定格式不正確'
+    return false
+  } catch (err) {
+    if (seq !== validateSeq) return false
+    validation.checkedConfig = config
+    validation.status = 'invalid'
+    validation.message = err instanceof Error ? err.message : '檢查失敗'
+    return false
+  }
+}
+
+function scheduleValidation(config: string): void {
+  if (validateTimer !== null) {
+    clearTimeout(validateTimer)
+    validateTimer = null
+  }
+  validation.status = 'checking'
+  validation.checkedConfig = ''
+  validation.message = '檢查中...'
+  validateTimer = window.setTimeout(() => {
+    validateTimer = null
+    void validateConfigNow(config)
+  }, 350)
+}
+
+watch(exportText, (config) => scheduleValidation(config), { immediate: true })
+
+onUnmounted(() => {
+  if (validateTimer !== null) clearTimeout(validateTimer)
+  validateSeq++
+})
 
 async function onSave(): Promise<void> {
+  if (!canExport.value) {
+    const ok = await validateConfigNow()
+    if (!ok) return
+  }
   const path = await window.api.dialog.saveLevel(exportText.value)
   if (path) {
     saveResult.value = `已存到 ${path}`
@@ -205,8 +282,9 @@ const cellColor = (k: CellState): string | undefined => {
       <button class="bar-btn" @click="emit('back')">← 返回</button>
       <span class="title">關卡設計</span>
       <span style="flex: 1" />
-      <button class="bar-btn" @click="showExport = true">輸出文字</button>
-      <button class="bar-btn" @click="onSave">存檔</button>
+      <span :class="['validation-status', validation.status]">{{ validationText }}</span>
+      <button class="bar-btn" :disabled="!canExport" @click="showExport = true">輸出文字</button>
+      <button class="bar-btn" :disabled="!canExport" @click="onSave">存檔</button>
       <button class="bar-btn primary" @click="onPlay">遊玩</button>
     </div>
 
@@ -274,10 +352,7 @@ const cellColor = (k: CellState): string | undefined => {
           </button>
         </div>
 
-        <div
-          class="board-wrap"
-          :style="{ '--rows': d.rows, '--cols': d.cols }"
-        >
+        <div class="board-wrap" :style="{ '--rows': d.rows, '--cols': d.cols }">
           <!-- corner -->
           <div class="corner" />
           <!-- column count inputs (per color, stacked) -->
@@ -347,11 +422,7 @@ const cellColor = (k: CellState): string | undefined => {
             <span class="thumb-id">#{{ i }}</span>
             <div class="thumb-shape" :data-color="p.color">
               <div v-for="(row, r) in p.shape" :key="r" class="thumb-row">
-                <div
-                  v-for="(v, c) in row"
-                  :key="c"
-                  :class="['thumb-cell', { on: v === 1 }]"
-                />
+                <div v-for="(v, c) in row" :key="c" :class="['thumb-cell', { on: v === 1 }]" />
               </div>
             </div>
           </button>
@@ -395,7 +466,9 @@ const cellColor = (k: CellState): string | undefined => {
                 :value="selected.color"
                 @change="selected.color = Number(($event.target as HTMLSelectElement).value)"
               >
-                <option v-for="ci in d.colorCount" :key="ci - 1" :value="ci - 1">{{ ci - 1 }}</option>
+                <option v-for="ci in d.colorCount" :key="ci - 1" :value="ci - 1">
+                  {{ ci - 1 }}
+                </option>
               </select>
             </label>
             <button class="bar-btn danger" @click="removePiece(selectedPiece)">刪除</button>
@@ -453,6 +526,17 @@ const cellColor = (k: CellState): string | undefined => {
   letter-spacing: 4px;
   color: #d8f96a;
 }
+.validation-status {
+  padding: 4px 8px;
+  color: rgba(203, 214, 226, 0.72);
+  font-size: 12px;
+}
+.validation-status.valid {
+  color: #d8f96a;
+}
+.validation-status.invalid {
+  color: #ff9a9a;
+}
 
 .body {
   flex: 1;
@@ -471,9 +555,13 @@ const cellColor = (k: CellState): string | undefined => {
   font-size: 13px;
   cursor: pointer;
 }
-.bar-btn:hover {
+.bar-btn:hover:not(:disabled) {
   background: rgba(30, 40, 60, 0.6);
   border-color: rgba(255, 255, 255, 0.25);
+}
+.bar-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
 }
 .bar-btn.primary {
   background: rgba(184, 232, 53, 0.2);
@@ -627,12 +715,8 @@ const cellColor = (k: CellState): string | undefined => {
   cursor: pointer;
 }
 .dcell.blocked {
-  background: repeating-linear-gradient(
-      45deg,
-      rgba(255, 255, 255, 0.04) 0 2px,
-      transparent 2px 6px
-    ),
-    #1d1f25;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.04) 0 2px, transparent 2px 6px), #1d1f25;
 }
 .dcell.fixed[data-color='0'] {
   background: linear-gradient(180deg, #98c52a 0%, #6a8e1c 100%);

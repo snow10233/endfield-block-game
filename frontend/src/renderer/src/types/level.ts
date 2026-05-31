@@ -64,3 +64,7 @@ export interface SolveResponse {
   error?: string
   solution: SolverPlacement[]
 }
+
+export interface AutoSolveResponse extends SolveResponse {
+  won: boolean
+}

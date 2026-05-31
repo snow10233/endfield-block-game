@@ -1,4 +1,10 @@
-import type { GameState, PlaceResponse, SimpleOk, SolveResponse } from '../types/level'
+import type {
+  AutoSolveResponse,
+  GameState,
+  PlaceResponse,
+  SimpleOk,
+  SolveResponse
+} from '../types/level'
 
 async function call<T>(op: string, args: Record<string, unknown> = {}): Promise<T> {
   return (await window.api.backend.call(op, args)) as T
@@ -10,6 +16,9 @@ export const backend = {
   },
   async loadString(text: string): Promise<SimpleOk> {
     return call('loadString', { text })
+  },
+  async validateLevelString(text: string): Promise<SimpleOk> {
+    return call('validateLevelString', { text })
   },
   async state(): Promise<GameState & { id: number }> {
     return call('state')
@@ -25,5 +34,8 @@ export const backend = {
   },
   async solve(): Promise<SolveResponse> {
     return call('solve')
+  },
+  async autoSolve(): Promise<AutoSolveResponse> {
+    return call('autoSolve')
   }
 }

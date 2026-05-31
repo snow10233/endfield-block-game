@@ -11,6 +11,7 @@ const lastError = ref<string | null>(null)
 const lastErrorAt = ref(0)
 const solution = ref<SolverPlacement[] | null>(null)
 const showHint = ref(false)
+const isApplyingSolution = ref(false)
 // epoch (ms) when current level finished loading — used to gate the 30s hint
 const loadedAt = ref(0)
 // last piece id that was successfully placed — used for the settle animation
@@ -80,6 +81,7 @@ function clear(): void {
   lastErrorAt.value = 0
   solution.value = null
   showHint.value = false
+  isApplyingSolution.value = false
   loadedAt.value = 0
   lastPlacedId.value = null
 }
@@ -108,12 +110,33 @@ async function toggleHint(): Promise<void> {
   showHint.value = true
 }
 
+async function autoPlaceSolution(): Promise<boolean> {
+  if (isApplyingSolution.value) return false
+  isApplyingSolution.value = true
+  try {
+    const r = await backend.autoSolve()
+    if (!r.ok) {
+      lastError.value = r.error ?? 'no solution'
+      lastErrorAt.value = Date.now()
+      return false
+    }
+    lastError.value = null
+    solution.value = r.solution
+    showHint.value = false
+    await refresh()
+    return true
+  } finally {
+    isApplyingSolution.value = false
+  }
+}
+
 export function useGame(): {
   state: typeof state
   lastError: typeof lastError
   lastErrorAt: typeof lastErrorAt
   solution: typeof solution
   showHint: typeof showHint
+  isApplyingSolution: typeof isApplyingSolution
   loadedAt: typeof loadedAt
   lastPlacedId: typeof lastPlacedId
   unplacedPieces: ComputedRef<MovablePiece[]>
@@ -126,6 +149,7 @@ export function useGame(): {
   reset: typeof reset
   clear: typeof clear
   toggleHint: typeof toggleHint
+  autoPlaceSolution: typeof autoPlaceSolution
 } {
   const unplacedPieces = computed(() => state.value?.pieces.filter((p) => !p.placed) ?? [])
   const placedPieces = computed(() => state.value?.pieces.filter((p) => p.placed) ?? [])
@@ -135,6 +159,7 @@ export function useGame(): {
     lastErrorAt,
     solution,
     showHint,
+    isApplyingSolution,
     loadedAt,
     lastPlacedId,
     unplacedPieces,
@@ -146,6 +171,7 @@ export function useGame(): {
     removePiece,
     reset,
     clear,
-    toggleHint
+    toggleHint,
+    autoPlaceSolution
   }
 }

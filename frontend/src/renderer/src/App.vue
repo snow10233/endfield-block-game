@@ -26,11 +26,13 @@ const {
   lastErrorAt,
   loadedAt,
   showHint,
+  isApplyingSolution,
   load,
   loadString,
   reset,
   clear,
-  toggleHint
+  toggleHint,
+  autoPlaceSolution
 } = useGame()
 const { cancel: cancelDrag } = useDrag()
 const { scale } = useViewport()
@@ -106,6 +108,12 @@ async function onPlayDesigned(configText: string): Promise<void> {
     screen.value = 'game'
   }
 }
+
+async function onAutoPlace(): Promise<void> {
+  if (!hintUnlocked.value) return
+  cancelDrag()
+  await autoPlaceSolution()
+}
 </script>
 
 <template>
@@ -122,11 +130,7 @@ async function onPlayDesigned(configText: string): Promise<void> {
       }"
       @click.capture="onStageClick"
     >
-      <StartScreen
-        v-if="screen === 'start'"
-        @new-game="onNewGame"
-        @designer="onDesigner"
-      />
+      <StartScreen v-if="screen === 'start'" @new-game="onNewGame" @designer="onDesigner" />
 
       <div v-else-if="screen === 'game'" class="game-screen">
         <div class="game-content">
@@ -149,6 +153,14 @@ async function onPlayDesigned(configText: string): Promise<void> {
           >
             {{ showHint ? '關閉提示' : '提示' }}
           </button>
+          <button
+            class="bar-btn"
+            :disabled="!hintUnlocked || isApplyingSolution || !state?.loaded || state?.won"
+            :title="hintUnlocked ? 'AI 直接完成目前題目' : '30 秒後解鎖'"
+            @click="onAutoPlace"
+          >
+            {{ isApplyingSolution ? '解題中...' : 'AI幫你放' }}
+          </button>
           <button class="bar-btn" :title="bgmMuted ? '取消靜音' : '靜音'" @click="toggleBgm">
             {{ bgmMuted ? '♪' : '♬' }}
           </button>
@@ -159,11 +171,7 @@ async function onPlayDesigned(configText: string): Promise<void> {
         </transition>
       </div>
 
-      <LevelDesigner
-        v-else-if="screen === 'designer'"
-        @back="backToMenu"
-        @play="onPlayDesigned"
-      />
+      <LevelDesigner v-else-if="screen === 'designer'" @back="backToMenu" @play="onPlayDesigned" />
 
       <transition name="fade">
         <div v-if="errorMsg" class="error-banner">{{ errorMsg }}</div>

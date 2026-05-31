@@ -150,6 +150,24 @@ std::string buildResponse(int id, const std::string& payloadJsonObject) {
   return out.str();
 }
 
+void writeSolution(JsonWriter& w, const std::vector<SolverPlacement>& sol) {
+  w.key("solution");
+  w.beginArray();
+  for (const SolverPlacement& sp : sol) {
+    w.beginObject();
+    w.key("pieceId");
+    w.valueInt(sp.pieceId);
+    w.key("row");
+    w.valueInt(sp.row);
+    w.key("col");
+    w.valueInt(sp.col);
+    w.key("rot");
+    w.valueInt(sp.rotation);
+    w.endObject();
+  }
+  w.endArray();
+}
+
 }  // namespace
 
 int main() {
@@ -190,6 +208,28 @@ int main() {
       if (!ok) {
         payload.key("error");
         payload.valueStr("failed to parse level config");
+      }
+      payload.endObject();
+    } else if (op == "validateLevelString") {
+      std::string text = json_util::getStr(line, "text");
+      Game candidate;
+      bool ok = candidate.loadFromString(text);
+      std::string error;
+      if (ok) {
+        Solver solver;
+        std::vector<SolverPlacement> sol;
+        ok = solver.solve(candidate, sol);
+        if (!ok) error = "no solution found";
+      } else {
+        error = "failed to parse level config";
+      }
+
+      payload.beginObject();
+      payload.key("ok");
+      payload.valueBool(ok);
+      if (!ok) {
+        payload.key("error");
+        payload.valueStr(error);
       }
       payload.endObject();
     } else if (op == "state") {
@@ -234,21 +274,38 @@ int main() {
         payload.key("error");
         payload.valueStr("no solution found");
       }
-      payload.key("solution");
-      payload.beginArray();
-      for (const SolverPlacement& sp : sol) {
-        payload.beginObject();
-        payload.key("pieceId");
-        payload.valueInt(sp.pieceId);
-        payload.key("row");
-        payload.valueInt(sp.row);
-        payload.key("col");
-        payload.valueInt(sp.col);
-        payload.key("rot");
-        payload.valueInt(sp.rotation);
-        payload.endObject();
+      writeSolution(payload, sol);
+      payload.endObject();
+    } else if (op == "autoSolve") {
+      Solver solver;
+      std::vector<SolverPlacement> sol;
+      bool ok = solver.solve(game, sol);
+      std::string error;
+      if (ok) {
+        game.reset();
+        for (const SolverPlacement& sp : sol) {
+          PlaceResult placed = game.placePart(sp.pieceId, sp.row, sp.col, sp.rotation);
+          if (!placed.ok) {
+            ok = false;
+            error = "failed to apply solution: " + placed.error;
+            game.reset();
+            break;
+          }
+        }
+      } else {
+        error = "no solution found";
       }
-      payload.endArray();
+
+      payload.beginObject();
+      payload.key("ok");
+      payload.valueBool(ok);
+      if (!ok) {
+        payload.key("error");
+        payload.valueStr(error);
+      }
+      payload.key("won");
+      payload.valueBool(ok && game.isWon());
+      writeSolution(payload, sol);
       payload.endObject();
     } else if (op == "quit") {
       payload.beginObject();
