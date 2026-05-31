@@ -3,6 +3,10 @@ import { onMounted, onUnmounted, computed } from 'vue'
 import { useDrag, midOf } from '../store/drag'
 import { useGame } from '../store/game'
 import { useViewport } from '../store/viewport'
+import { playEffect, preloadEffects } from '../store/audio'
+import rotateSrc from '@resources/effects/rotate.mp3'
+
+preloadEffects([rotateSrc])
 
 const { drag, move, rotate, end, cancel } = useDrag()
 const { state, removePiece } = useGame()
@@ -23,6 +27,7 @@ async function onKeyDown(e: KeyboardEvent): Promise<void> {
   if (!drag.value) return
   if (e.key === 'r' || e.key === 'R') {
     rotate()
+    playEffect(rotateSrc)
     e.preventDefault()
   } else if (e.key === 'Escape') {
     const d = end()

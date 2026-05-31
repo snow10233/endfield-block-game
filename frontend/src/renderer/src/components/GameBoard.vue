@@ -4,6 +4,10 @@ import CountIndicator from './CountIndicator.vue'
 import { useGame } from '../store/game'
 import { useDrag, rotateShape, midOf, rotatePos } from '../store/drag'
 import { useViewport } from '../store/viewport'
+import { playEffect, preloadEffects } from '../store/audio'
+import putDownSrc from '@resources/effects/put_down.mp3'
+
+preloadEffects([putDownSrc])
 
 const { state, place, solution, showHint, lastPlacedId } = useGame()
 const { drag, start: startDrag, end: endDrag } = useDrag()
@@ -94,7 +98,8 @@ async function onGridMouseUp(e: MouseEvent): Promise<void> {
   const anchor = rotatePos(baseMid, baseRows, baseCols, d.rotation)
   const topRow = hit.row - anchor.row
   const topCol = hit.col - anchor.col
-  await place(d.pieceId, topRow, topCol, d.rotation)
+  const placed = await place(d.pieceId, topRow, topCol, d.rotation)
+  if (placed) playEffect(putDownSrc)
 }
 
 // Preview: where the piece WOULD land if dropped right now

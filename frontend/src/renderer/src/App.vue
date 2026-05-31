@@ -8,9 +8,11 @@ import LevelDesigner from './components/LevelDesigner.vue'
 import { useGame } from './store/game'
 import { useDrag } from './store/drag'
 import { useViewport, DESIGN_W, DESIGN_H } from './store/viewport'
-import { useAudio } from './store/audio'
+import { playEffect, preloadEffects, useAudio } from './store/audio'
 import bgImage from '@resources/board-background.png'
 import bgmSrc from '@resources/bgm.mp3'
+import touchButtonSrc from '@resources/effects/touch_button.mp3'
+import winSrc from '@resources/effects/win.mp3'
 
 type Screen = 'start' | 'game' | 'designer'
 
@@ -33,7 +35,25 @@ const {
 const { cancel: cancelDrag } = useDrag()
 const { scale } = useViewport()
 const { muted: bgmMuted, toggle: toggleBgm, start: startBgm } = useAudio(bgmSrc)
-onMounted(() => startBgm())
+onMounted(() => {
+  startBgm()
+  preloadEffects([touchButtonSrc, winSrc])
+})
+
+function onStageClick(e: MouseEvent): void {
+  const target = e.target
+  if (!(target instanceof Element)) return
+  const button = target.closest('button')
+  if (!button || button.hasAttribute('disabled')) return
+  playEffect(touchButtonSrc)
+}
+
+watch(
+  () => state.value?.won ?? false,
+  (won, wasWon) => {
+    if (won && !wasWon) playEffect(winSrc)
+  }
+)
 
 // 30-second gate before the hint becomes available on each new level.
 const hintUnlocked = ref(false)
@@ -100,6 +120,7 @@ async function onPlayDesigned(configText: string): Promise<void> {
         height: `${DESIGN_H}px`,
         transform: `scale(${scale})`
       }"
+      @click.capture="onStageClick"
     >
       <StartScreen
         v-if="screen === 'start'"
