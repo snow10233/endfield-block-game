@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Endfield Block Game 代碼說明</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4f6f8;
+        --paper: #ffffff;
+        --ink: #18202a;
+        --muted: #5c6875;
+        --line: #d9e0e7;
+        --soft: #eef3f7;
+        --accent: #6f9f18;
+        --accent-2: #2b8aa5;
+        --danger: #b84a4a;
+        --code-bg: #101820;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter,
+          "Noto Sans TC",
+          "Microsoft JhengHei",
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        line-height: 1.7;
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      aside {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        padding: 28px 22px;
+        border-right: 1px solid var(--line);
+        background: #111820;
+        color: #dce6ef;
+        overflow: auto;
+      }
+
+      aside h2 {
+        margin: 0 0 18px;
+        color: #d8f96a;
+        font-size: 16px;
+        letter-spacing: 0.08em;
+      }
+
+      nav a {
+        display: block;
+        padding: 7px 0;
+        border-left: 3px solid transparent;
+        padding-left: 10px;
+        color: #b8c6d4;
+        text-decoration: none;
+        font-size: 14px;
+        transition:
+          color 0.15s ease,
+          border-color 0.15s ease,
+          background 0.15s ease;
+      }
+
+      nav a:hover {
+        color: #ffffff;
+      }
+
+      nav a.active {
+        border-left-color: #d8f96a;
+        background: rgba(216, 249, 106, 0.08);
+        color: #ffffff;
+        font-weight: 700;
+      }
+
+      main {
+        max-width: 1120px;
+        width: 100%;
+        padding: 42px 48px 80px;
+      }
+
+      .hero {
+        padding: 34px 38px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+        box-shadow: 0 12px 28px rgba(18, 32, 45, 0.08);
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: 36px;
+        line-height: 1.2;
+      }
+
+      h2 {
+        margin: 42px 0 14px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid var(--line);
+        font-size: 26px;
+      }
+
+      h3 {
+        margin: 30px 0 10px;
+        color: #233140;
+        font-size: 20px;
+      }
+
+      p {
+        margin: 10px 0;
+      }
+
+      .lead {
+        color: var(--muted);
+        font-size: 17px;
+      }
+
+      .callout {
+        margin: 18px 0;
+        padding: 14px 16px;
+        border-left: 4px solid var(--accent);
+        background: #f2f8e7;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 14px;
+        margin: 18px 0;
+      }
+
+      .card {
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+      }
+
+      .card h3 {
+        margin-top: 0;
+      }
+
+      table {
+        width: 100%;
+        margin: 16px 0;
+        border-collapse: collapse;
+        background: var(--paper);
+      }
+
+      th,
+      td {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: var(--soft);
+      }
+
+      code {
+        padding: 0.12em 0.35em;
+        border-radius: 4px;
+        background: #e9eef3;
+        font-family: "JetBrains Mono", Consolas, monospace;
+        font-size: 0.92em;
+      }
+
+      pre {
+        overflow: auto;
+        padding: 16px;
+        border-radius: 8px;
+        background: var(--code-bg);
+        color: #d8e4ee;
+        line-height: 1.55;
+      }
+
+      pre code {
+        padding: 0;
+        background: transparent;
+        color: inherit;
+      }
+
+      .flow {
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+      }
+
+      .tag {
+        display: inline-block;
+        margin: 2px 4px 2px 0;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #eaf4f7;
+        color: var(--accent-2);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .warning {
+        border-left-color: var(--danger);
+        background: #fff1f1;
+      }
+
+      @media (max-width: 900px) {
+        .shell {
+          display: block;
+        }
+
+        aside {
+          position: static;
+          height: auto;
+        }
+
+        main {
+          padding: 28px 18px 56px;
+        }
+
+        h1 {
+          font-size: 30px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside>
+        <h2>Endfield Block Game</h2>
+        <nav>
+          <a href="#overview">專案總覽</a>
+          <a href="#flow">整體資料流</a>
+          <a href="#backend">後端 C++</a>
+          <a href="#frontend">前端 Electron / Vue</a>
+          <a href="#gameplay">玩家操作流程</a>
+          <a href="#designer">關卡設計器</a>
+          <a href="#level-format">關卡文字格式</a>
+          <a href="#commands">建置與執行</a>
+          <a href="#boundary">責任邊界</a>
+        </nav>
+      </aside>
+
+      <main>
+        <section class="hero" id="overview">
+          <h1>Endfield Block Game 代碼說明</h1>
+          <p class="lead">
+            此 repo 是一個以《明日方舟：終末地》「源石電路修復」為靈感的拼圖小遊戲。玩法接近
+            Nonogram：玩家把不同形狀的方塊零件放到棋盤上，讓每一列、每一行的指定顏色格數都符合提示。
+          </p>
+          <p>
+            只要列與行的數量全部符合就過關，沒有分數系統。
+          </p>
+          <div class="callout">
+            <strong>核心設計原則：</strong>後端 C++ 是遊戲邏輯的唯一真相來源。前端負責畫面與輸入；真正能不能放置、是否過關、是否有解，都交給 C++ 判斷。
+          </div>
+        </section>
+
+        <section>
+          <h2>專案結構</h2>
+          <pre><code>endfield-block-game/
+├── backend/      C++20 + CMake，負責所有遊戲規則、關卡解析、勝利判定與解題器
+├── frontend/     Electron + Vue 3 + TypeScript，負責畫面、拖曳操作、音效與檔案對話框
+├── docs/         規則與素材文件
+├── intro.md      Markdown 說明文件
+└── intro.html    HTML 說明文件</code></pre>
+        </section>
+
+        <section id="flow">
+          <h2>整體資料流</h2>
+          <p>
+            執行 Electron 前端時，Electron main process 會啟動後端 C++ 執行檔
+            <code>backend/build/main</code>。兩者用 stdin/stdout 傳 NDJSON，也就是一行一個 JSON 物件。
+          </p>
+          <div class="flow">
+            <pre><code>Vue renderer
+  ↓ window.api.backend.call(...)
+preload bridge
+  ↓ ipcRenderer.invoke('backend:call')
+Electron main process
+  ↓ child.stdin.write(JSON line)
+C++ backend process
+  ↓ stdout 回傳 JSON line
+Electron main process
+  ↓ 依 id 找回 pending Promise
+Vue renderer 更新畫面</code></pre>
+          </div>
+          <p>例如放置零件時，前端送出：</p>
+          <pre><code>{"id":1,"op":"place","pieceId":0,"row":0,"col":0,"rot":0}</code></pre>
+          <p>C++ 回傳：</p>
+          <pre><code>{"id":1,"ok":true,"won":false}</code></pre>
+          <p>
+            前端在拖曳過程中只處理視覺跟隨與預覽；滑鼠放開時才把最終格子座標送到後端。這樣可以避免每個 mousemove 都跨 process 呼叫。
+          </p>
+        </section>
+
+        <section id="backend">
+          <h2>後端 C++ 說明</h2>
+          <p>
+            後端位於 <code>backend/</code>，使用 CMake 建置。<code>core</code> 是遊戲核心 library，
+            <code>main</code> 是 stdin/stdout IPC 入口，Electron 實際啟動的是 <code>main</code>。
+          </p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>檔案</th>
+                <th>責任</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>include/cell.h</code></td>
+                <td>定義棋盤格狀態：空格、不可放置格、固定色塊、玩家放置的可移動零件。</td>
+              </tr>
+              <tr>
+                <td><code>include/board.h</code>, <code>src/board.cpp</code></td>
+                <td>管理 M x N 棋盤與格子存取。</td>
+              </tr>
+              <tr>
+                <td><code>include/part.h</code>, <code>src/part.cpp</code></td>
+                <td>管理可移動零件的形狀、顏色、旋轉、目前放置位置。</td>
+              </tr>
+              <tr>
+                <td><code>include/file-loader.h</code>, <code>src/file-loader.cpp</code></td>
+                <td>解析關卡文字檔，轉成 <code>GameDataPacket</code>。</td>
+              </tr>
+              <tr>
+                <td><code>include/game.h</code>, <code>src/game.cpp</code></td>
+                <td>遊戲規則核心：載入、重置、放置、移除、勝利判定、目前列行計數。</td>
+              </tr>
+              <tr>
+                <td><code>include/solver.h</code>, <code>src/solver.cpp</code></td>
+                <td>回溯法解題器，找出一組可過關的零件擺法。</td>
+              </tr>
+              <tr>
+                <td><code>include/json.h</code></td>
+                <td>輕量 JSON 輸出與簡單 top-level 欄位解析。</td>
+              </tr>
+              <tr>
+                <td><code>src/main.cpp</code></td>
+                <td>IPC 指令入口，讀 request、呼叫 <code>Game</code> 或 <code>Solver</code>、輸出 response。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Cell 與 Board</h3>
+          <p><code>CellState</code> 有四種狀態：</p>
+          <p>
+            <span class="tag">Empty</span>可以放零件
+            <span class="tag">Blocked</span>不可放置
+            <span class="tag">Fixed</span>關卡固定有色格
+            <span class="tag">Movable</span>玩家目前放上去的零件格
+          </p>
+          <p>
+            <code>Board</code> 只負責保存 <code>vector&lt;vector&lt;Cell&gt;&gt;</code>，提供
+            <code>resize()</code>、<code>inBounds()</code>、<code>at()</code>。它本身不判斷遊戲規則，規則集中在
+            <code>Game</code>。
+          </p>
+
+          <h3>Part</h3>
+          <p>
+            <code>Part</code> 表示一個可移動零件，包含零件編號、顏色、未旋轉形狀、目前旋轉、是否已放置，以及旋轉後 bounding box 左上角位置。
+          </p>
+          <p>
+            <code>getCurrentShape()</code> 依照 <code>rotation_</code> 回傳旋轉後的形狀。
+            <code>getCurrentMid()</code> 會把原始形狀中第一個填滿格當作拖曳/旋轉錨點，再映射到旋轉後座標。
+          </p>
+
+          <h3>FileLoader 與關卡資料</h3>
+          <p><code>FileLoader</code> 可以從檔案或字串讀取關卡設定。解析後存進 <code>GameDataPacket</code>：</p>
+          <pre><code>struct GameDataPacket {
+  int colors, row, col;
+  std::vector&lt;OneColorRule&gt; rules;
+  std::vector&lt;Position&gt; nonColorFixeds;
+  std::vector&lt;Part&gt; partDatas;
+};</code></pre>
+          <p>
+            每個顏色都有一組 <code>OneColorRule</code>，其中 <code>rowNeed</code> 是該顏色每列需要幾格，
+            <code>colNeed</code> 是每行需要幾格，<code>fixeds</code> 是固定格座標。
+          </p>
+
+          <h3>Game</h3>
+          <p><code>Game</code> 是後端最重要的類別，負責把關卡資料變成可操作的遊戲狀態。</p>
+          <ol>
+            <li><code>load()</code> 或 <code>loadFromString()</code> 讀入關卡。</li>
+            <li><code>applyLoaded()</code> 建立棋盤、複製零件、套用固定格與 blocked 格。</li>
+            <li><code>placePart(pieceId, row, col, rotation)</code> 嘗試放置零件。</li>
+            <li><code>canPlace()</code> 檢查是否越界、是否碰到 blocked/fixed/其他 movable 格。</li>
+            <li>放置成功後 <code>writePieceCells()</code> 寫入棋盤。</li>
+            <li><code>isWon()</code> 檢查每個顏色的每列、每行數量是否完全符合目標。</li>
+          </ol>
+          <p>
+            勝利條件是嚴格相等：某顏色在某列/某行的目前格數必須等於關卡指定值。只要有一列或一行不相等，就還沒過關。
+          </p>
+
+          <h3>Solver</h3>
+          <p>
+            <code>Solver</code> 是自動解題器，使用回溯搜尋。它會從關卡初始狀態建立暫存棋盤，保留固定格與 blocked 格，產生每個零件不同旋轉形狀，並依零件大小由大到小嘗試。
+          </p>
+          <p>
+            每次放置會檢查越界、重疊與 row/col 目標是否超過；全部零件放完後，檢查所有 row/col count 是否剛好符合。
+          </p>
+          <pre><code>struct SolverPlacement {
+  int pieceId;
+  int row;
+  int col;
+  int rotation;
+};</code></pre>
+
+          <h3>C++ IPC 指令</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>op</th>
+                <th>功能</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>load</code></td><td>從檔案路徑載入關卡。</td></tr>
+              <tr><td><code>loadString</code></td><td>從前端傳來的文字載入關卡。</td></tr>
+              <tr><td><code>validateLevelString</code></td><td>驗證關卡文字格式，並用 solver 確認是否有解。</td></tr>
+              <tr><td><code>state</code></td><td>回傳完整遊戲狀態給前端。</td></tr>
+              <tr><td><code>place</code></td><td>放置或移動某個零件。</td></tr>
+              <tr><td><code>remove</code></td><td>把已放置零件移回零件欄。</td></tr>
+              <tr><td><code>reset</code></td><td>重置目前關卡。</td></tr>
+              <tr><td><code>solve</code></td><td>回傳 solver 找到的解，但不改變棋盤。</td></tr>
+              <tr><td><code>autoSolve</code></td><td>找解後直接套用到目前棋盤。</td></tr>
+              <tr><td><code>quit</code></td><td>回傳成功並結束後端 process。</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="frontend">
+          <h2>前端 Electron / Vue 說明</h2>
+          <p>前端位於 <code>frontend/</code>，由三層組成：</p>
+          <pre><code>Electron main process     src/main/index.ts
+preload bridge            src/preload/index.ts
+Vue renderer              src/renderer/src/*</code></pre>
+
+          <div class="grid">
+            <article class="card">
+              <h3>Electron main process</h3>
+              <p>
+                <code>src/main/index.ts</code> 建立視窗、啟動 C++ 後端、逐行讀取 stdout、管理 request id 與 pending Promise，並提供開檔/存檔 dialog。
+              </p>
+            </article>
+            <article class="card">
+              <h3>Preload bridge</h3>
+              <p>
+                <code>src/preload/index.ts</code> 暴露 <code>window.api</code>，讓 renderer 安全呼叫後端與檔案對話框，不直接碰 Node.js API。
+              </p>
+            </article>
+            <article class="card">
+              <h3>Renderer API wrapper</h3>
+              <p>
+                <code>api/backend.ts</code> 把 <code>window.api.backend.call()</code> 包成 <code>load</code>、<code>state</code>、<code>place</code>、<code>solve</code> 等型別化方法。
+              </p>
+            </article>
+          </div>
+
+          <h3>Vue store</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>檔案</th>
+                <th>功能</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>store/game.ts</code></td>
+                <td>保存目前 <code>GameState</code>、錯誤訊息、solver 解、提示狀態、載入時間、是否正在套用解。</td>
+              </tr>
+              <tr>
+                <td><code>store/drag.ts</code></td>
+                <td>保存拖曳中的零件、滑鼠位置、旋轉狀態，也提供形狀旋轉與座標旋轉工具。</td>
+              </tr>
+              <tr>
+                <td><code>store/viewport.ts</code></td>
+                <td>固定 1100 x 800 設計座標，依視窗大小縮放，並把 client 座標轉回 stage 座標。</td>
+              </tr>
+              <tr>
+                <td><code>store/audio.ts</code></td>
+                <td>背景音樂、音效快取、靜音狀態與 localStorage。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>主要 Vue 元件</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>元件</th>
+                <th>功能</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>App.vue</code></td><td>最上層畫面狀態，切換 start/game/designer，處理 topbar、提示解鎖、音效與勝利 banner。</td></tr>
+              <tr><td><code>StartScreen.vue</code></td><td>起始選單，提供開啟新遊戲與關卡設計。</td></tr>
+              <tr><td><code>GameBoard.vue</code></td><td>棋盤、列行提示、格子狀態、放置預覽、solver hint overlay、從棋盤拖起已放置零件。</td></tr>
+              <tr><td><code>PiecePanel.vue</code></td><td>右側零件欄，未放置零件可拖曳，已放置零件顯示為灰色 placeholder。</td></tr>
+              <tr><td><code>DragLayer.vue</code></td><td>全域拖曳浮層，跟隨滑鼠；按 <code>R</code> 旋轉，按 <code>Escape</code> 可取消或移除已放置零件。</td></tr>
+              <tr><td><code>PieceView.vue</code></td><td>單純負責畫出一個零件形狀。</td></tr>
+              <tr><td><code>CountIndicator.vue</code></td><td>顯示每列/每行目標數量與目前完成數量。</td></tr>
+              <tr><td><code>LevelDesigner.vue</code></td><td>關卡設計器，可編輯棋盤、固定格、blocked 格、目標數量、零件形狀，並輸出設定檔。</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="gameplay">
+          <h2>玩家操作流程</h2>
+          <h3>載入關卡</h3>
+          <ol>
+            <li>玩家在 <code>StartScreen</code> 點「開啟新遊戲」。</li>
+            <li><code>App.vue</code> 呼叫 <code>window.api.dialog.openLevel()</code>。</li>
+            <li>Electron main process 開啟檔案選擇對話框。</li>
+            <li>選到檔案後，<code>store/game.ts</code> 呼叫 <code>backend.load(path)</code>。</li>
+            <li>C++ <code>Game::load()</code> 解析檔案，建立棋盤與零件。</li>
+            <li>前端呼叫 <code>state()</code>，用回傳的 <code>GameState</code> 渲染畫面。</li>
+          </ol>
+
+          <h3>拖曳放置零件</h3>
+          <ol>
+            <li>玩家從 <code>PiecePanel</code> 按住未放置零件，或從 <code>GameBoard</code> 按住已放置零件。</li>
+            <li><code>store/drag.ts</code> 記錄拖曳狀態。</li>
+            <li><code>DragLayer</code> 讓零件跟隨滑鼠；按 <code>R</code> 只改前端視覺旋轉狀態。</li>
+            <li><code>GameBoard</code> 根據滑鼠位置計算 drop cell，並顯示綠色/紅色 preview。</li>
+            <li>滑鼠放開時，前端計算零件旋轉後 bounding box 左上角。</li>
+            <li>前端呼叫 <code>backend.place(pieceId, row, col, rot)</code>。</li>
+            <li>C++ 檢查合法性，成功後更新棋盤並判斷是否過關。</li>
+            <li>前端刷新 <code>state()</code> 並重新渲染。</li>
+          </ol>
+
+          <h3>提示與自動解題</h3>
+          <p>
+            <code>App.vue</code> 在關卡載入後設定 30 秒計時器。30 秒後才允許使用提示與 AI 自動放置。
+          </p>
+          <p>
+            點「提示」會呼叫 <code>solve()</code>，只取得 solver 結果，再由 <code>GameBoard</code> 在空格上畫 hint overlay。
+            點「AI幫你放」會呼叫 <code>autoSolve()</code>，後端找解並直接套用到遊戲狀態。
+          </p>
+        </section>
+
+        <section id="designer">
+          <h2>關卡設計器</h2>
+          <p><code>LevelDesigner.vue</code> 可以：</p>
+          <ul>
+            <li>調整棋盤 rows/cols。</li>
+            <li>設定顏色數，目前 UI 支援 1 或 2 色。</li>
+            <li>編輯每列/每行的目標數字。</li>
+            <li>放置 blocked 格與固定有色格。</li>
+            <li>新增、刪除與編輯零件形狀。</li>
+            <li>產生與後端 <code>FileLoader</code> 相容的文字格式。</li>
+            <li>呼叫 <code>validateLevelString()</code>，用 C++ parser + solver 確認格式正確且關卡有解。</li>
+            <li>通過驗證後才能輸出文字或存檔。</li>
+          </ul>
+        </section>
+
+        <section id="level-format">
+          <h2>關卡文字格式</h2>
+          <p><code>FileLoader::parse()</code> 依序讀取：</p>
+          <pre><code>colors rows cols
+
+每個 color:
+  rowNeed[0..rows-1]
+  colNeed[0..cols-1]
+  fixedCount
+  fixed row col
+  fixed row col
+  ...
+
+nonColorFixedCount
+blocked row col
+blocked row col
+...
+
+每個 movable part，直到 EOF:
+  color partRows partCols
+  shape row 0
+  shape row 1
+  ...</code></pre>
+          <p>範例：</p>
+          <pre><code>1 3 3
+3 2 1
+3 2 1
+0
+0
+0 2 2
+1 1
+1 0
+0 1 3
+1 1 1</code></pre>
+          <p>
+            這代表 1 種顏色、3 x 3 棋盤；該顏色每列需要 <code>3, 2, 1</code> 格，每行需要
+            <code>3, 2, 1</code> 格；沒有固定有色格、沒有 blocked 格；有兩個 color 0 的零件。
+          </p>
+        </section>
+
+        <section id="commands">
+          <h2>建置與執行</h2>
+          <h3>後端</h3>
+          <pre><code>cd backend
+cmake -S . -B build
+cmake --build build
+./build/main</code></pre>
+
+          <h3>前端</h3>
+          <pre><code>cd frontend
+pnpm install
+pnpm dev</code></pre>
+
+          <h3>型別檢查與打包</h3>
+          <pre><code>cd frontend
+pnpm typecheck
+pnpm build
+pnpm build:linux
+pnpm build:win
+pnpm build:mac</code></pre>
+
+          <div class="callout warning">
+            前端開發模式會找 <code>../backend/build/main</code>，所以通常要先把後端 build 起來，再跑
+            <code>pnpm dev</code>。
+          </div>
+        </section>
+
+        <section>
+          <h2>打包設定</h2>
+          <p><code>frontend/electron-builder.yml</code> 已設定：</p>
+          <ul>
+            <li><code>appId: com.endfield.blockgame</code></li>
+            <li><code>productName: EndfieldBlockGame</code></li>
+            <li><code>extraResources</code> 會把 <code>backend/tests</code> 放進 packaged app。</li>
+            <li>Windows build 會額外把 <code>../backend/build/main.exe</code> 放到 <code>resources/backend/main.exe</code>。</li>
+          </ul>
+          <p>開發模式與打包模式的後端路徑不同：</p>
+          <ul>
+            <li>開發模式：<code>backend/build/main</code></li>
+            <li>打包模式：<code>process.resourcesPath/backend/main</code> 或 Windows 的 <code>main.exe</code></li>
+          </ul>
+        </section>
+
+        <section id="boundary">
+          <h2>程式責任邊界</h2>
+          <div class="callout">
+            <ul>
+              <li>C++ 後端負責規則、驗證、勝利判定、solver、關卡格式。</li>
+              <li>Vue/TypeScript 前端負責畫面、輸入、拖曳預覽、音效、視窗與檔案對話框。</li>
+              <li>前端可以做「預覽是否合法」的視覺提示，但最終結果仍以 C++ <code>place</code> 回傳為準。</li>
+              <li>如果之後要新增規則，例如更多顏色、特殊格、不同勝利條件，應先改 C++ 的資料結構與 <code>Game</code>/<code>Solver</code>，再讓前端顯示新狀態。</li>
+            </ul>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script>
+      const navLinks = Array.from(document.querySelectorAll("nav a[href^='#']"));
+      const sections = navLinks
+        .map((link) => {
+          const target = document.querySelector(link.getAttribute("href"));
+          return target ? { link, target } : null;
+        })
+        .filter(Boolean);
+
+      function setActive(link) {
+        navLinks.forEach((item) => item.classList.toggle("active", item === link));
+        link.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
+
+      function updateActiveSection() {
+        const marker = window.scrollY + Math.min(window.innerHeight * 0.32, 260);
+        let current = sections[0];
+
+        for (const section of sections) {
+          if (section.target.offsetTop <= marker) current = section;
+          else break;
+        }
+
+        if (current) setActive(current.link);
+      }
+
+      window.addEventListener("scroll", updateActiveSection, { passive: true });
+      window.addEventListener("resize", updateActiveSection);
+      updateActiveSection();
+    </script>
+  </body>
+</html>
