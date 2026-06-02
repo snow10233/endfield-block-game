@@ -19,6 +19,20 @@
         --code-bg: #101820;
       }
 
+      body[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #0c1117;
+        --paper: #141b24;
+        --ink: #dce6ef;
+        --muted: #a8b4c0;
+        --line: #2c3744;
+        --soft: #1d2732;
+        --accent: #d8f96a;
+        --accent-2: #79d8ee;
+        --danger: #ff8a8a;
+        --code-bg: #05080c;
+      }
+
       * {
         box-sizing: border-box;
       }
@@ -54,6 +68,27 @@
         background: #111820;
         color: #dce6ef;
         overflow: auto;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 18px;
+        right: 22px;
+        z-index: 20;
+        padding: 8px 14px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--paper);
+        color: var(--ink);
+        font: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 8px 22px rgba(18, 32, 45, 0.14);
+      }
+
+      .theme-toggle:hover {
+        border-color: var(--accent);
       }
 
       aside h2 {
@@ -117,7 +152,7 @@
 
       h3 {
         margin: 30px 0 10px;
-        color: #233140;
+        color: var(--ink);
         font-size: 20px;
       }
 
@@ -135,6 +170,10 @@
         padding: 14px 16px;
         border-left: 4px solid var(--accent);
         background: #f2f8e7;
+      }
+
+      body[data-theme="dark"] .callout {
+        background: #1b2a1f;
       }
 
       .grid {
@@ -177,7 +216,7 @@
       code {
         padding: 0.12em 0.35em;
         border-radius: 4px;
-        background: #e9eef3;
+        background: var(--soft);
         font-family: "JetBrains Mono", Consolas, monospace;
         font-size: 0.92em;
       }
@@ -209,7 +248,7 @@
         margin: 2px 4px 2px 0;
         padding: 2px 8px;
         border-radius: 999px;
-        background: #eaf4f7;
+        background: var(--soft);
         color: var(--accent-2);
         font-size: 13px;
         font-weight: 700;
@@ -218,6 +257,10 @@
       .warning {
         border-left-color: var(--danger);
         background: #fff1f1;
+      }
+
+      body[data-theme="dark"] .warning {
+        background: #2a1d22;
       }
 
       @media (max-width: 900px) {
@@ -234,6 +277,11 @@
           padding: 28px 18px 56px;
         }
 
+        .theme-toggle {
+          top: 12px;
+          right: 12px;
+        }
+
         h1 {
           font-size: 30px;
         }
@@ -241,6 +289,9 @@
     </style>
   </head>
   <body>
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切換深淺色">
+      深色
+    </button>
     <div class="shell">
       <aside>
         <h2>Endfield Block Game</h2>
@@ -670,6 +721,27 @@ pnpm build:mac</code></pre>
       </main>
     </div>
     <script>
+      const themeToggle = document.getElementById("theme-toggle");
+      const savedTheme = localStorage.getItem("intro-theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      let currentTheme = savedTheme || (prefersDark ? "dark" : "light");
+
+      function applyTheme(theme) {
+        currentTheme = theme;
+        document.body.dataset.theme = theme;
+        localStorage.setItem("intro-theme", theme);
+        themeToggle.textContent = theme === "dark" ? "淺色" : "深色";
+        themeToggle.setAttribute(
+          "aria-label",
+          theme === "dark" ? "切換為淺色模式" : "切換為深色模式"
+        );
+      }
+
+      themeToggle.addEventListener("click", () => {
+        applyTheme(currentTheme === "dark" ? "light" : "dark");
+      });
+      applyTheme(currentTheme);
+
       const navLinks = Array.from(document.querySelectorAll("nav a[href^='#']"));
       const sections = navLinks
         .map((link) => {
