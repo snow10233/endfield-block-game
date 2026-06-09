@@ -1,11 +1,19 @@
-<img src="docs/public/images/image.png" alt="alt text" width="400" />
+# Endfield Block Game
 
-## 代碼說明
+使用 C++ 後端引擎與 Electron (Vue 3) 前端的拼圖小遊戲專案。
 
-完整的前後端代碼說明放在：
+## Quick Start
 
-```text
-docs/public/intro/intro.html
-```
+1. 建置後端：進入 `backend` 後執行 `cmake -S . -B build` 與 `cmake --build build`
+2. 安裝套件：進入 `frontend` 後執行 `pnpm install`
+3. 啟動前端：在 `frontend` 目錄下執行 `pnpm dev`
 
-可直接用瀏覽器開啟此 HTML 檔案查看。文件內含目錄高亮與深/淺色切換。
+## Documentation
+
+- [整體資料流與 IPC](docs/protocol.md)
+- [後端邏輯與 Solver](docs/backend.md)
+- [前端架構](docs/frontend.md)
+- [關卡文字格式](docs/level-format.md)
+- [關卡設計器](docs/designer.md)
+- [責任邊界與打包](docs/development.md)
+- [系統邊界與防呆測試報告](backend/tests/more_tests/edge-cases.md)
