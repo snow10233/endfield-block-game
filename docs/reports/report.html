@@ -1,0 +1,995 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Endfield Block Game 報告準備說明</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4f6f8;
+        --paper: #ffffff;
+        --ink: #1b242f;
+        --muted: #5e6a75;
+        --line: #d9e1e8;
+        --soft: #eef3f7;
+        --accent: #6f9f18;
+        --accent-2: #1e7d96;
+        --warn: #a65f00;
+        --code: #101820;
+      }
+
+      body[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #0d1117;
+        --paper: #141b24;
+        --ink: #dce6ef;
+        --muted: #a8b4c0;
+        --line: #2c3744;
+        --soft: #1d2732;
+        --accent: #d8f96a;
+        --accent-2: #79d8ee;
+        --warn: #ffbd66;
+        --code: #05080c;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          Inter,
+          "Noto Sans TC",
+          "Microsoft JhengHei",
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        line-height: 1.72;
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      aside {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        padding: 26px 22px;
+        overflow: auto;
+        border-right: 1px solid var(--line);
+        background: #111820;
+        color: #dce6ef;
+      }
+
+      aside h2 {
+        margin: 0 0 18px;
+        color: #d8f96a;
+        font-size: 15px;
+        letter-spacing: 0.06em;
+      }
+
+      nav a {
+        display: block;
+        padding: 7px 0 7px 10px;
+        border-left: 3px solid transparent;
+        color: #b8c6d4;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      nav a:hover,
+      nav a.active {
+        border-left-color: #d8f96a;
+        color: #ffffff;
+        background: rgba(216, 249, 106, 0.08);
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 18px;
+        right: 22px;
+        z-index: 20;
+        padding: 8px 14px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--paper);
+        color: var(--ink);
+        font: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 8px 22px rgba(18, 32, 45, 0.14);
+      }
+
+      main {
+        width: 100%;
+        max-width: 1120px;
+        padding: 42px 48px 84px;
+      }
+
+      .hero {
+        padding: 32px 36px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+        box-shadow: 0 12px 28px rgba(18, 32, 45, 0.08);
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: 34px;
+        line-height: 1.2;
+      }
+
+      h2 {
+        margin: 42px 0 14px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid var(--line);
+        font-size: 25px;
+      }
+
+      h3 {
+        margin: 28px 0 10px;
+        font-size: 19px;
+      }
+
+      p {
+        margin: 10px 0;
+      }
+
+      .lead {
+        color: var(--muted);
+        font-size: 17px;
+      }
+
+      .callout {
+        margin: 16px 0;
+        padding: 14px 16px;
+        border-left: 4px solid var(--accent);
+        background: #f2f8e7;
+      }
+
+      body[data-theme="dark"] .callout {
+        background: #1b2a1f;
+      }
+
+      .warn {
+        border-left-color: var(--warn);
+        background: #fff5e5;
+      }
+
+      body[data-theme="dark"] .warn {
+        background: #2b2114;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 14px;
+        margin: 16px 0;
+      }
+
+      .card {
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+      }
+
+      .card h3 {
+        margin-top: 0;
+      }
+
+      table {
+        width: 100%;
+        margin: 16px 0;
+        border-collapse: collapse;
+        background: var(--paper);
+      }
+
+      th,
+      td {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: var(--soft);
+      }
+
+      code {
+        padding: 0.12em 0.35em;
+        border-radius: 4px;
+        background: var(--soft);
+        font-family: "JetBrains Mono", Consolas, monospace;
+        font-size: 0.92em;
+      }
+
+      pre {
+        overflow: auto;
+        padding: 16px;
+        border-radius: 8px;
+        background: var(--code);
+        color: #d8e4ee;
+        line-height: 1.55;
+      }
+
+      pre code {
+        padding: 0;
+        background: transparent;
+        color: inherit;
+      }
+
+      .flow {
+        margin: 16px 0;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+        font-family: "JetBrains Mono", Consolas, monospace;
+        white-space: pre-wrap;
+      }
+
+      .qa {
+        margin: 16px 0;
+      }
+
+      .qa details {
+        margin: 10px 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+      }
+
+      .qa summary {
+        padding: 12px 14px;
+        cursor: pointer;
+        font-weight: 800;
+      }
+
+      .qa details > div {
+        padding: 0 14px 14px;
+      }
+
+      ul,
+      ol {
+        padding-left: 1.4rem;
+      }
+
+      @media (max-width: 860px) {
+        .shell {
+          display: block;
+        }
+
+        aside {
+          position: static;
+          height: auto;
+        }
+
+        main {
+          padding: 28px 20px 64px;
+        }
+
+        .theme-toggle {
+          position: static;
+          margin: 12px 20px 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button class="theme-toggle" type="button" id="themeToggle">
+      切換主題
+    </button>
+    <div class="shell">
+      <aside>
+        <h2>報告目錄</h2>
+        <nav id="toc">
+          <a href="#overview">快速總覽</a>
+          <a href="#motivation">1. 動機與技術選擇</a>
+          <a href="#architecture">2. 專案架構設計</a>
+          <a href="#timeline">3. 開發順序</a>
+          <a href="#features">4. 重點功能說明</a>
+          <a href="#ownership">5. 開發負責內容</a>
+          <a href="#ai">6. 如何配合 AI 實作</a>
+          <a href="#testing">7. 測試與展示方式</a>
+          <a href="#qa">我需要會回答的問題</a>
+          <a href="#summary">8. 總結與反思</a>
+        </nav>
+      </aside>
+
+      <main>
+        <section class="hero" id="overview">
+          <h1>Endfield Block Game 報告準備說明</h1>
+          <p class="lead">
+            這份文件是報告前複習用，比簡報版更詳細。重點是讓我能講清楚專案怎麼設計、
+            怎麼實作，以及 AI 在開發中扮演什麼角色。
+          </p>
+          <div class="callout">
+            一句話介紹：這是一個以《明日方舟：終末地》「源石電路修復」為靈感的拼圖小遊戲，
+            玩家放置多邊形零件，讓每列與每行的指定顏色格數符合提示；C++
+            後端負責所有規則， Electron + Vue 前端負責畫面與互動。
+          </div>
+        </section>
+
+        <section id="motivation">
+          <h2>1. 專案動機與技術選擇</h2>
+          <p>
+            本專案的玩法接近
+            Nonogram，但不是用滑鼠直接塗格子，而是要把不同形狀的多邊形零件放到棋盤上。
+            棋盤旁邊會顯示每一列、每一行需要的顏色格數；只要所有列和行的數量都剛好符合，就判定過關。
+          </p>
+
+          <h3>為什麼不用同一套工具</h3>
+          <p>
+            上一次作業五子棋是用
+            PyQt。這次我想嘗試不同的桌面應用開發方式，所以沒有繼續使用同一套工具。
+            另外，Qt 的 QSS 當然可以做介面，但 CSS 的資料、範例和 AI
+            訓練資料都更豐富，對於快速調整 UI 會比較方便。
+          </p>
+
+          <h3>為什麼不用遊戲引擎</h3>
+          <p>
+            這個專案不是要做複雜場景、物理、關卡串接或角色系統，而是偏向
+            UI、狀態顯示和拖曳互動。
+            我對遊戲引擎本身也沒有特別想深入，所以選擇用一般桌面應用框架來做。
+          </p>
+
+          <h3>Electron、Vue、TypeScript 的理由</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>選擇</th>
+                <th>原因</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Electron</td>
+                <td>
+                  可做桌面應用，也能延伸到未來工具型或介面型專案，不只限於遊戲。
+                </td>
+              </tr>
+              <tr>
+                <td>Vue 3</td>
+                <td>
+                  本專案前端狀態不算非常複雜，Vue
+                  對這種互動畫面較直觀，開發成本較低。
+                </td>
+              </tr>
+              <tr>
+                <td>TypeScript</td>
+                <td>
+                  用型別定義前後端資料，例如
+                  <code>GameState</code
+                  >、<code>MovablePiece</code>、<code>PlaceResponse</code>，降低欄位與型別錯誤。
+                </td>
+              </tr>
+              <tr>
+                <td>C++20</td>
+                <td>
+                  符合課程要求，也讓遊戲規則、勝利判定和 solver 集中在後端。
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout warn">
+            報告時可以自然說明：我原本不熟 Vue，這次主要把 Vue 當作 Electron 的
+            UI layer 來學。 核心規則和資料流是我先定好的，前端
+            component、CSS、互動細節有大量使用 Claude Code 輔助完成。
+            我理解本專案的 Vue 資料流，但不會說自己已經精通 Vue 生態。
+          </div>
+        </section>
+
+        <section id="architecture">
+          <h2>2. 專案架構設計</h2>
+          <pre><code>endfield-block-game/
+├── backend/      C++20 + CMake
+├── frontend/     Electron + Vue 3 + TypeScript
+└── docs/         規則、介紹與報告文件</code></pre>
+
+          <p>
+            這個專案最重要的設計原則是：<strong
+              >C++ 後端是遊戲邏輯的唯一真相來源</strong
+            >。
+            前端可以做視覺預覽，但真正能不能放置、是否過關、關卡是否有解，都由
+            C++ 判斷。
+          </p>
+
+          <h3>整體資料流</h3>
+          <div class="flow">
+            Vue renderer ↓ 呼叫 api/backend.ts preload bridge:
+            window.api.backend.call() ↓ ipcRenderer.invoke('backend:call')
+            Electron main process ↓ child.stdin.write(JSON line) C++ backend
+            process ↓ stdout 回傳 JSON line Electron main process 依 id 找回
+            Promise ↓ Vue store 更新 state，畫面重新渲染
+          </div>
+
+          <h3>Electron 與 C++ 的 IPC</h3>
+          <p>
+            Electron main process 位於
+            <code>frontend/src/main/index.ts</code>。它用
+            <code>spawn()</code> 啟動 <code>backend/build/main</code>，再用
+            <code>readline</code> 一行一行讀取後端 stdout。格式是
+            NDJSON，也就是一行一個 JSON 物件。
+          </p>
+          <pre><code>{"id":1,"op":"place","pieceId":0,"row":0,"col":0,"rot":0}
+{"id":1,"ok":true,"won":false}</code></pre>
+          <p>
+            每個 request 都有 <code>id</code>，Electron main process 用這個
+            <code>id</code> 管理 pending Promise。 C++ 回傳同樣的
+            <code>id</code> 時，就可以把 response 對回原本的呼叫。
+          </p>
+
+          <h3>責任切分</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>層級</th>
+                <th>檔案位置</th>
+                <th>負責內容</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>C++ backend</td>
+                <td><code>backend/include</code>, <code>backend/src</code></td>
+                <td>
+                  關卡解析、棋盤資料、放置規則、勝利判定、solver、關卡可解性驗證。
+                </td>
+              </tr>
+              <tr>
+                <td>Electron main</td>
+                <td><code>frontend/src/main/index.ts</code></td>
+                <td>
+                  建立視窗、啟動 C++ process、管理 IPC、檔案開啟與存檔對話框。
+                </td>
+              </tr>
+              <tr>
+                <td>Preload</td>
+                <td><code>frontend/src/preload/index.ts</code></td>
+                <td>
+                  用 <code>contextBridge</code> 暴露安全 API 給 renderer。
+                </td>
+              </tr>
+              <tr>
+                <td>Vue renderer</td>
+                <td><code>frontend/src/renderer/src</code></td>
+                <td>畫面顯示、拖曳互動、提示 overlay、音效、關卡設計器 UI。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>拖曳過程的特殊設計</h3>
+          <p>
+            拖曳時 mousemove 很頻繁。如果每一幀都送 IPC 到
+            C++，會讓互動變卡。因此拖曳中的視覺跟隨、
+            旋轉動畫與紅綠預覽由前端處理；滑鼠放開時，前端只送最終格子座標給
+            C++。C++ 回傳成功或失敗後， 前端再刷新完整 <code>GameState</code>。
+          </p>
+        </section>
+
+        <section id="timeline">
+          <h2>3. 開發順序</h2>
+          <p>
+            這次開發是由核心資料流到完整體驗，先確保後端資料正確，再接前端顯示，最後補互動與視覺效果。
+          </p>
+          <ol>
+            <li>先實作後端關卡讀取，並讓後端能輸出對應 JSON 狀態。</li>
+            <li>接著實作前端基本畫面，並提供載入關卡的 GUI。</li>
+            <li>再實作遊戲放置邏輯、旋轉、移除，以及勝負判定。</li>
+            <li>
+              接著實作關卡生成器，讓使用者能設計棋盤、提示數字、固定格與零件。
+            </li>
+            <li>最後補上音效、BGM、背景圖與動畫，讓展示成果更完整。</li>
+          </ol>
+          <div class="flow">
+            後端 parser → JSON state → 前端渲染 → place/remove/reset →
+            solver/autoSolve → LevelDesigner → 可解性驗證 →
+            音效、BGM、背景圖、動畫
+          </div>
+        </section>
+
+        <section id="features">
+          <h2>4. 重點功能說明</h2>
+
+          <h3>後端核心資料</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>模組</th>
+                <th>功能</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>Cell</code></td>
+                <td>
+                  定義棋盤格狀態：<code>Empty</code>、<code>Blocked</code>、<code>Fixed</code>、<code>Movable</code>。
+                </td>
+              </tr>
+              <tr>
+                <td><code>Board</code></td>
+                <td>
+                  保存二維棋盤，提供
+                  resize、inBounds、at。它只管資料，不直接決定規則。
+                </td>
+              </tr>
+              <tr>
+                <td><code>Part</code></td>
+                <td>
+                  保存零件 id、顏色、原始形狀、旋轉、是否已放置、目前座標。
+                </td>
+              </tr>
+              <tr>
+                <td><code>GameDataPacket</code></td>
+                <td>
+                  保存關卡資料，包括顏色數、棋盤大小、row/col 目標、fixed
+                  格、blocked 格與零件。
+                </td>
+              </tr>
+              <tr>
+                <td><code>Game</code></td>
+                <td>
+                  規則核心，負責 load、reset、place、remove、isWon、目前 row/col
+                  filled count。
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>關卡文字格式讀取</h3>
+          <p>
+            <code>FileLoader::parse()</code>
+            從純文字讀取關卡。格式依序包含顏色數、棋盤大小、 每個顏色的 row/col
+            目標、固定有色格、不可放置格，以及多個可移動零件。
+          </p>
+          <pre><code>colors rows cols
+
+每個 color:
+  rowNeed[0..rows-1]
+  colNeed[0..cols-1]
+  fixedCount
+  fixedRow fixedCol ...
+
+nonColorFixedCount
+blockedRow blockedCol ...
+
+每個 movable part，直到 EOF:
+  color partRows partCols
+  shape rows...</code></pre>
+
+          <h3>放置、旋轉與合法性</h3>
+          <p>
+            零件的形狀存在 <code>Part::baseShape_</code>，旋轉值是
+            <code>0..3</code>， 每次代表順時針 90
+            度。前端拖曳時也會用同樣的旋轉概念產生預覽，但真正的合法性判斷在
+            <code>Game::canPlace()</code>。
+          </p>
+          <p>
+            <code>canPlace()</code> 會檢查越界、blocked、fixed、其他 movable
+            零件重疊。成功才呼叫 <code>writePieceCells()</code> 把零件寫進棋盤。
+          </p>
+
+          <h3>列行數量與過關條件</h3>
+          <p>
+            <code>Game::isWon()</code> 會對每個顏色檢查所有 row 和
+            col。判定條件不是大於等於，
+            而是目前填色數必須剛好等於關卡需求。只要有一列或一行不符合，就還沒過關。
+          </p>
+
+          <h3>Solver / AI 幫你放</h3>
+          <p>
+            <code>Solver</code> 使用回溯法。它會先把固定格與 blocked
+            格放到暫存棋盤，
+            再產生每個零件的不重複旋轉。搜尋時大零件優先，並且每次放置都先檢查
+            row/col 是否超過目標， 這樣可以提早剪枝。
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>前端按鈕</th>
+                <th>後端 op</th>
+                <th>效果</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>提示</td>
+                <td><code>solve</code></td>
+                <td>
+                  只回傳解答座標，前端在棋盤上畫 hint overlay，不改變棋盤。
+                </td>
+              </tr>
+              <tr>
+                <td>AI幫你放</td>
+                <td><code>autoSolve</code></td>
+                <td>
+                  C++ 找到解後 reset 棋盤，再逐一呼叫
+                  <code>placePart()</code> 套用解答。
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>關卡設計器與可解性驗證</h3>
+          <p>
+            <code>LevelDesigner.vue</code> 可以調整棋盤大小、顏色數、row/col
+            目標、blocked 格、fixed 格，
+            也能新增與編輯零件。它會把目前設計輸出成和
+            <code>FileLoader</code> 相容的文字格式。
+          </p>
+          <p>
+            設計器會呼叫 <code>validateLevelString</code>。後端會先 parse
+            文字，再用 <code>Solver</code> 確認是否有解。
+            有解時才允許輸出文字與存檔。
+          </p>
+
+          <h3>前端拖曳互動與放置預覽</h3>
+          <p>
+            <code>GameBoard.vue</code> 負責棋盤、row/col indicator、放置預覽和
+            hint overlay。
+            <code>DragLayer.vue</code> 負責讓正在拖曳的零件跟著滑鼠移動，按
+            <code>R</code> 可以旋轉。 <code>store/drag.ts</code> 保存拖曳中的
+            pieceId、顏色、形狀、旋轉與滑鼠位置。
+          </p>
+          <p>
+            前端 preview
+            會用目前棋盤資料估算可否放置，顯示綠色或紅色。但這只是給使用者看的提示。
+            最終仍要靠 C++ <code>place</code> response 決定。
+          </p>
+
+          <h3>音效、BGM、背景圖與動畫</h3>
+          <p>
+            前端資源位於 <code>frontend/resources</code>。目前包含
+            BGM、背景圖，以及按鈕、放置、旋轉、過關等音效。
+            <code>store/audio.ts</code> 會管理背景音樂、音效快取、靜音狀態與
+            localStorage。
+          </p>
+        </section>
+
+        <section id="ownership">
+          <h2>5. 開發負責內容</h2>
+          <p>本專案主要程式實作與架構整合由我完成，包含：</p>
+          <ul>
+            <li>前期技術選型</li>
+            <li>C++ 後端架構</li>
+            <li>關卡讀取與資料格式</li>
+            <li>遊戲規則與勝負判定</li>
+            <li>solver 與自動放置功能</li>
+            <li>Electron / Vue 前端架構</li>
+            <li>前後端 IPC 串接</li>
+            <li>關卡生成器</li>
+            <li>音效、BGM、背景圖與動畫整合</li>
+            <li>最終測試與 demo 確認</li>
+          </ul>
+          <div class="callout">
+            如果需要提到團隊合作，可以保守講：「本專案主要程式實作與架構整合由我完成，
+            其他成員主要協助討論展示流程、確認測試結果與成果呈現。」
+          </div>
+        </section>
+
+        <section id="ai">
+          <h2>6. 如何配合 AI 實作</h2>
+          <p>
+            本次開發主要使用 Claude Code 作為 coding agent。我的定位不是讓 AI
+            完全主導專案， 而是把它當作加速開發、跨語言串接、UI
+            調整與文件整理的工具。
+          </p>
+
+          <h3>實際協作流程</h3>
+          <ol>
+            <li>先閱讀作業規格，確認 C++ 後端必須負責核心遊戲邏輯。</li>
+            <li>
+              開發初期先建立基本後端架構，例如 board、part、file-loader
+              等資料結構，避免後續架構跑偏。
+            </li>
+            <li>
+              接著用自然語言描述每一階段想完成的功能，請 Claude Code
+              協助補齊前端、後端、IPC 與 UI。
+            </li>
+            <li>必要時先和 AI 討論實作方向，再請它修改程式。</li>
+            <li>
+              完成後自己檢查程式結果，透過執行或操作遊戲確認功能是否符合需求。
+            </li>
+            <li>如果行為不符合預期，再補充描述讓 AI 繼續修正。</li>
+            <li>開發過程中也讓 AI 協助整理架構說明與報告文件。</li>
+          </ol>
+
+          <h3>前端 Vue 的誠實說法</h3>
+          <p>
+            我原本不熟 Vue，因此前端 component、CSS 排版、拖曳互動細節大量使用
+            Claude Code 輔助。 但前端在本專案中的定位很清楚：只負責
+            UI、輸入與顯示，不負責核心遊戲規則。
+          </p>
+          <p>
+            報告時重點不是假裝我精通 Vue，而是要能講清楚資料怎麼流：
+            <code
+              >renderer → preload → Electron main → C++ backend → state 回傳 →
+              Vue 更新畫面</code
+            >。
+          </p>
+
+          <h3>AI 協作反思</h3>
+          <ul>
+            <li>AI 很適合加速樣板程式、UI 調整、文件整理與跨語言串接。</li>
+            <li>人仍然需要掌握架構方向，尤其是 C++ 後端必須負責規則這件事。</li>
+            <li>AI 產出的內容需要由人檢查，不能完全不看就接受。</li>
+            <li>本專案規模適中、需求清楚，因此和 AI 協作過程相對順利。</li>
+          </ul>
+        </section>
+
+        <section id="testing">
+          <h2>7. 測試與展示方式</h2>
+          <p>
+            最終展示會用現場 demo，不需要在報告中硬塞截圖。可以照下面流程講：
+          </p>
+          <ol>
+            <li>開啟 Electron 應用。</li>
+            <li>載入既有關卡。</li>
+            <li>拖曳與旋轉零件。</li>
+            <li>展示放置成功與失敗的情況。</li>
+            <li>展示提示或 AI 自動放置。</li>
+            <li>展示關卡設計器。</li>
+            <li>儲存或遊玩自訂關卡。</li>
+          </ol>
+
+          <h3>測試方向</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>測試類型</th>
+                <th>內容</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>後端測資</td>
+                <td>
+                  使用 <code>backend/tests</code> 的關卡確認 parser 與 solver。
+                </td>
+              </tr>
+              <tr>
+                <td>前端實際操作</td>
+                <td>確認拖曳、放置、旋轉、移除、重置、過關判定。</td>
+              </tr>
+              <tr>
+                <td>關卡設計器</td>
+                <td>建立可解關卡，呼叫後端驗證可解性，確認能輸出與遊玩。</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>執行方式</h3>
+          <pre><code>cd backend
+cmake -S . -B build
+cmake --build build
+
+cd ../frontend
+pnpm install
+pnpm dev</code></pre>
+          <p>
+            前端開發模式會尋找
+            <code>../backend/build/main</code>，所以通常要先把後端編譯好。
+          </p>
+        </section>
+
+        <section id="qa">
+          <h2>我需要會回答的問題</h2>
+          <div class="qa">
+            <details open>
+              <summary>狀態放在哪裡？</summary>
+              <div>
+                <p>
+                  回答方向：前端狀態主要在
+                  <code>frontend/src/renderer/src/store/game.ts</code>。 它用
+                  Vue 的 <code>ref</code> 和 <code>computed</code> 做簡單
+                  store，沒有使用 Pinia。 <code>state</code> 保存後端回傳的
+                  <code>GameState</code>，另外也保存錯誤訊息、提示狀態、solver
+                  解答、 是否正在套用解答、目前關卡載入時間等。
+                </p>
+                <p>
+                  可以補一句：真正的遊戲規則狀態仍然以 C++ 為準，前端 store
+                  是用來顯示後端回傳資料。
+                </p>
+              </div>
+            </details>
+
+            <details>
+              <summary>前端怎麼跟 C++ 溝通？</summary>
+              <div>
+                <p>
+                  回答方向：Vue renderer 先呼叫
+                  <code>api/backend.ts</code>，它會再呼叫 preload 暴露的
+                  <code>window.api.backend.call()</code>。preload 用
+                  <code>ipcRenderer.invoke('backend:call')</code> 傳到 Electron
+                  main process。main process 再把 JSON request 寫進 C++ child
+                  process 的 stdin。 C++ 用 stdout 回傳 JSON line，main process
+                  依照 <code>id</code> 對回 Promise，最後 Vue 更新畫面。
+                </p>
+                <div class="flow">
+                  Vue component/store → api/backend.ts →
+                  window.api.backend.call() → ipcRenderer.invoke('backend:call')
+                  → Electron main → C++ stdin/stdout → response 回到 Vue
+                </div>
+              </div>
+            </details>
+
+            <details>
+              <summary>拖曳時為什麼不每次都問 C++？</summary>
+              <div>
+                <p>
+                  回答方向：mousemove 太頻繁，每一幀都 IPC
+                  會造成卡頓。所以拖曳中的視覺預覽由前端處理，
+                  包含跟隨滑鼠、旋轉和紅綠預覽；滑鼠放開時才送最終座標到 C++
+                  做合法性判斷。 這樣保留互動流暢度，也保留 C++ 作為規則權威。
+                </p>
+              </div>
+            </details>
+
+            <details>
+              <summary>Vue 在這個專案的角色是什麼？</summary>
+              <div>
+                <p>
+                  回答方向：Vue 只負責畫面和互動，不負責核心遊戲規則。像
+                  <code>GameBoard.vue</code> 畫棋盤與提示，
+                  <code>PiecePanel.vue</code> 顯示零件欄，<code
+                    >DragLayer.vue</code
+                  >
+                  處理拖曳浮層， <code>LevelDesigner.vue</code> 做關卡設計器
+                  UI。是否能放置、是否過關、solver 結果都由 C++ 判斷。
+                </p>
+              </div>
+            </details>
+
+            <details>
+              <summary>TypeScript 在這個專案幫了什麼？</summary>
+              <div>
+                <p>
+                  回答方向：TypeScript 用
+                  <code>frontend/src/renderer/src/types/level.ts</code>
+                  定義資料形狀，例如
+                  <code>GameState</code
+                  >、<code>MovablePiece</code>、<code>PlaceResponse</code>、
+                  <code>SolveResponse</code>。這樣前端和 AI
+                  都比較不容易把欄位名稱或型別搞錯。
+                </p>
+                <p>
+                  例如 <code>MovablePiece.row</code> 和
+                  <code>MovablePiece.col</code> 是旋轉後 bounding box
+                  左上角座標， <code>rotation</code> 是
+                  <code>0..3</code>。這些用型別寫清楚後，資料流比較穩定。
+                </p>
+              </div>
+            </details>
+
+            <details>
+              <summary>如果被問「你會 Vue 嗎」要怎麼回答？</summary>
+              <div>
+                <p>
+                  回答方向：我原本不熟 Vue，但透過這個專案理解了 Vue
+                  component、reactive state、
+                  <code>computed</code>
+                  與事件處理在本專案中的用途。我不會說自己精通 Vue 生態，
+                  但能說明本專案前端資料流與各元件責任。
+                </p>
+                <p>
+                  可以補一句：本次作業重點是 C++ 遊戲邏輯，前端主要是 UI
+                  layer，所以使用 AI 輔助 Vue/CSS 實作是合理的技術取捨。
+                </p>
+              </div>
+            </details>
+
+            <details>
+              <summary>關卡設計器怎麼確定關卡有解？</summary>
+              <div>
+                <p>
+                  回答方向：<code>LevelDesigner.vue</code>
+                  會把目前設計組成文字格式，然後呼叫
+                  <code>validateLevelString</code>。C++ 後端先用
+                  <code>FileLoader</code> 解析，再用
+                  <code>Solver</code> 嘗試找解。找得到解才允許輸出與存檔。
+                </p>
+              </div>
+            </details>
+
+            <details>
+              <summary>solver 的方法是什麼？</summary>
+              <div>
+                <p>
+                  回答方向：solver 使用回溯搜尋。它會保留 fixed 和 blocked
+                  格，對每個零件產生不重複旋轉，
+                  大零件優先放。每次放置會檢查是否越界、是否重疊，以及該顏色
+                  row/col 是否超過目標。 全部零件放完後，再檢查所有 row/col
+                  count 是否剛好等於目標。
+                </p>
+              </div>
+            </details>
+
+            <details>
+              <summary>為什麼說 C++ 是唯一真相來源？</summary>
+              <div>
+                <p>
+                  回答方向：因為前端不決定最後放置結果，也不決定過關。前端只能送
+                  request 給後端， 後端的 <code>Game::placePart()</code> 和
+                  <code>Game::isWon()</code> 才會更新規則狀態。
+                  前端每次成功操作後都會呼叫
+                  <code>state()</code> 重新拿完整狀態並渲染。
+                </p>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <section id="summary">
+          <h2>8. 總結與反思</h2>
+          <p>
+            這次專案主要收穫是學到 Electron / Vue 與 C++ backend
+            的整合方式。透過把規則集中在 C++，
+            前端就可以專心處理畫面、輸入、拖曳預覽、音效與檔案對話框，責任切分比較清楚。
+          </p>
+          <p>
+            AI 協作讓開發速度變快，尤其在前端 UI、IPC 串接與文件整理上很有幫助。
+            但前提是自己要先理解架構與規則，否則 AI
+            可能會把不該放在前端的規則搬到 TypeScript。
+          </p>
+          <p>
+            對於自己不熟的 Vue / CSS，也可以透過 AI
+            輔助快速完成；但我需要清楚知道前端只是 UI layer， 核心規則仍然由 C++
+            後端負責。這是本專案最重要的設計邊界。
+          </p>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const btn = document.getElementById("themeToggle");
+      const savedTheme = localStorage.getItem("report-theme");
+      if (savedTheme === "dark") document.body.dataset.theme = "dark";
+      btn.addEventListener("click", () => {
+        document.body.dataset.theme =
+          document.body.dataset.theme === "dark" ? "" : "dark";
+        localStorage.setItem(
+          "report-theme",
+          document.body.dataset.theme === "dark" ? "dark" : "light",
+        );
+      });
+
+      const links = Array.from(document.querySelectorAll("#toc a"));
+      const sections = links
+        .map((a) => document.querySelector(a.getAttribute("href")))
+        .filter(Boolean);
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (!visible) return;
+          links.forEach((a) => a.classList.remove("active"));
+          const active = links.find(
+            (a) => a.getAttribute("href") === `#${visible.target.id}`,
+          );
+          if (active) active.classList.add("active");
+        },
+        { rootMargin: "-20% 0px -65% 0px", threshold: [0.1, 0.25, 0.5] },
+      );
+      sections.forEach((section) => observer.observe(section));
+    </script>
+  </body>
+</html>
