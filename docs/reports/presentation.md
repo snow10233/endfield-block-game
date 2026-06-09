@@ -265,9 +265,9 @@ style: |
 
 <div class="title-grid">
   <div>
-    <div class="kicker">Puzzle Game / Desktop App</div>
-    <h1>Endfield<br />Block Game</h1>
-    <p class="sub">以「源石電路修復」為靈感的 Nonogram-like 拼圖小遊戲</p>
+    <h1>終末地<br />源石修復計畫</h1>
+    <div class="kicker">B11415040 宋梓豪</div>
+    <div class="kicker">B11415010 黃嘉強</div>
   </div>
   <div class="panel mock">
     <div class="board">
@@ -277,7 +277,6 @@ style: |
       <div class="cell g"></div><div class="cell b"></div><div class="cell"></div><div class="cell o"></div><div class="cell"></div>
       <div class="cell"></div><div class="cell"></div><div class="cell g"></div><div class="cell"></div><div class="cell o"></div>
     </div>
-    <div class="hintline">row / col count<br />+ polyomino pieces</div>
     <div class="piece">
       <div class="pc"></div><div class="pc"></div><div class="pc blank"></div>
       <div class="pc blank"></div><div class="pc"></div><div class="pc"></div>
@@ -287,31 +286,12 @@ style: |
 
 ---
 
-## 遊戲目標
-
-<div class="split">
-  <div>
-    <p class="kicker">Core Rule</p>
-    <h1 style="font-size: 54px">把零件放對，讓提示數字成立</h1>
-  </div>
-  <div class="panel">
-    <ul>
-      <li>拖曳多邊形零件到棋盤</li>
-      <li>每列、每行都有指定顏色格數</li>
-      <li>所有 row / col count <strong>剛好相等</strong>就過關</li>
-      <li>沒有分數，只有 pass / not yet</li>
-    </ul>
-  </div>
-</div>
-
----
-
-## 技術選型與責任
+## 架構設計
 
 <div class="three">
   <div class="card">
     <span class="pill">Backend</span>
-    <h3>C++20 + CMake</h3>
+    <h3>C++ + CMake</h3>
     <p>關卡解析、規則判斷、勝利條件、solver。</p>
   </div>
   <div class="card">
@@ -326,11 +306,9 @@ style: |
   </div>
 </div>
 
-<p class="sub">重點：不使用遊戲引擎，因為本專案更像規則明確的互動工具。</p>
-
 ---
 
-## 架構：C++ 是唯一真相來源
+## 架構流程：
 
 <div class="flow">
   <div class="node"><b>Vue Renderer</b><span>畫面與輸入</span></div>
@@ -339,9 +317,9 @@ style: |
   <div class="arrow">→</div>
   <div class="node"><b>Electron Main</b><span>spawn + IPC</span></div>
   <div class="arrow">→</div>
-  <div class="node"><b>C++ Backend</b><span>規則唯一真相</span></div>
+  <div class="node"><b>C++ Backend</b><span>遊戲決策主要引擎</span></div>
 </div>
-
+<br/>
 <div class="two" style="margin-top: 30px">
   <div class="panel">
     <h3>前端負責體驗</h3>
@@ -402,7 +380,7 @@ style: |
 
 ## Solver 與關卡設計器
 
-<div class="split">
+<div class="two">
   <div class="panel">
     <h3>Solver 做什麼</h3>
     <ol>
@@ -425,6 +403,8 @@ style: |
 
 ---
 
+<!-- _class: lead -->
+
 ## AI 協作與開發流程
 
 <div class="two">
@@ -435,6 +415,7 @@ style: |
       <li>Electron IPC 樣板</li>
       <li>跨語言資料結構整理</li>
       <li>文件與報告整理</li>
+      <li>音效生成</li>
     </ul>
   </div>
   <div class="panel">
@@ -443,58 +424,6 @@ style: |
       <li>C++ 必須負責核心規則</li>
       <li>前後端責任邊界</li>
       <li>實際操作測試與 demo 驗收</li>
-      <li>不把規則搬到 TypeScript</li>
-    </ul>
-  </div>
-</div>
-
----
-
-## Demo 測試流程
-
-<div class="three">
-  <div class="card">
-    <div class="big">1</div>
-    <h3>載入測資</h3>
-    <p><code>backend/tests/Example*.txt</code></p>
-  </div>
-  <div class="card">
-    <div class="big">2</div>
-    <h3>操作棋盤</h3>
-    <p>拖曳、旋轉、合法 / 非法放置、重置。</p>
-  </div>
-  <div class="card">
-    <div class="big">3</div>
-    <h3>展示功能</h3>
-    <p>提示、AI幫你放、過關判定。</p>
-  </div>
-</div>
-
-<div class="flow">
-  <div class="node"><b>Load</b><span>既有關卡</span></div>
-  <div class="arrow">→</div>
-  <div class="node"><b>Play</b><span>拖曳旋轉</span></div>
-  <div class="arrow">→</div>
-  <div class="node"><b>Auto Solve</b><span>solver 展示</span></div>
-  <div class="arrow">→</div>
-  <div class="node"><b>Design</b><span>自訂關卡</span></div>
-</div>
-
----
-
-<!-- _class: lead -->
-
-<div class="split">
-  <div>
-    <div class="kicker">Takeaway</div>
-    <h1>規則放後端，體驗交前端</h1>
-  </div>
-  <div class="panel">
-    <ul>
-      <li>C++ 集中管理遊戲規則與 solver</li>
-      <li>Electron + Vue 專注桌面 UI 與互動</li>
-      <li>關卡設計器讓專案不只是一個單關卡 demo</li>
-      <li>AI 用來加速實作，但不取代架構判斷</li>
     </ul>
   </div>
 </div>
