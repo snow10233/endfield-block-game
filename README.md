@@ -10,10 +10,10 @@
 
 ## Documentation
 
-- [整體資料流與 IPC](docs/protocol.md)
-- [後端邏輯與 Solver](docs/backend.md)
-- [前端架構](docs/frontend.md)
-- [關卡文字格式](docs/level-format.md)
-- [關卡設計器](docs/designer.md)
-- [責任邊界與打包](docs/development.md)
+- [整體資料流與 IPC](docs/public/md/protocol.md)
+- [後端邏輯與 Solver](docs/public/md/backend.md)
+- [前端架構](docs/public/md/frontend.md)
+- [關卡文字格式](docs/public/md/level-format.md)
+- [關卡設計器](docs/public/md/designer.md)
+- [責任邊界與打包](docs/public/md/development.md)
 - [系統邊界與防呆測試報告](backend/tests/more_tests/edge-cases.md)
