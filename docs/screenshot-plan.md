@@ -9,7 +9,7 @@ moving files later.
 | File | Screen | What to show |
 | --- | --- | --- |
 | `docs/assets/screenshots/start-screen.png` | Start screen | Title, load-level action, level-designer action. |
-| `docs/assets/screenshots/game-board.png` | Active puzzle | Board, row/column counters, side piece panel, and top controls. |
+| `docs/assets/screenshots/game-board.png` | Active puzzle | Captured. Board, row/column counters, side piece panel, and top controls. |
 | `docs/assets/screenshots/drag-preview.png` | Drag interaction | A piece mid-drag with green/red placement preview visible. |
 | `docs/assets/screenshots/solver-hint.png` | Solver/hint | Hint overlay or auto-solved board after the 30-second unlock. |
 | `docs/assets/screenshots/level-designer.png` | Level designer | Board editor, piece editor, validation status, export/save controls. |
@@ -28,4 +28,3 @@ moving files later.
 ![Game board](docs/assets/screenshots/game-board.png)
 ![Level designer](docs/assets/screenshots/level-designer.png)
 ```
-

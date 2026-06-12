@@ -1,6 +1,6 @@
 # Endfield Block Game
 
-![Endfield Block Game technical banner](docs/assets/portfolio-banner.svg)
+![Endfield Block Game technical banner](docs/assets/portfolio-banner.png)
 
 Endfield Block Game is a desktop block-puzzle game inspired by the
 "Originium Circuit Repair" style of puzzle play. The player places and rotates
@@ -187,9 +187,11 @@ backend bundling for macOS/Linux needs confirmation before release.
 
 ## Screenshots / Demo
 
-Runtime screenshots should be captured from this project before publishing the
-portfolio page. No screenshots are embedded yet so the README does not show
-stale or unrelated UI.
+![Runtime gameplay screenshot](docs/assets/screenshots/game-board.png)
+
+The screenshot above shows the current desktop runtime: a loaded puzzle board,
+row and column count indicators, blocked cells, movable pieces, and top-level
+game controls.
 
 Suggested screenshot paths:
 
