@@ -1,0 +1,21 @@
+flowchart LR
+  Start["Start screen"] --> Load["Open level file"]
+  Start --> Designer["Level designer"]
+  Designer --> Validate["Validate generated level<br/>through C++ solver"]
+  Validate --> Export["Export or save level"]
+  Validate --> PlayDesigned["Play designed level"]
+  Load --> Game["Game screen"]
+  PlayDesigned --> Game
+  Game --> Drag["Drag piece"]
+  Drag --> Rotate["Optional R rotation"]
+  Rotate --> Drop["Drop on board"]
+  Drag --> Drop
+  Drop --> ValidateMove["C++ place validation"]
+  ValidateMove -->|invalid| Error["Show error banner"]
+  ValidateMove -->|valid| Refresh["Refresh full GameState"]
+  Refresh --> WinCheck{"Won?"}
+  WinCheck -->|no| Game
+  WinCheck -->|yes| Win["Win banner + SFX"]
+  Game --> Hint["Hint/auto-solve after 30s"]
+  Hint --> Solver["C++ solver"]
+  Solver --> Refresh

@@ -1,0 +1,19 @@
+sequenceDiagram
+  autonumber
+  participant UI as Vue renderer
+  participant API as Preload window.api
+  participant Electron as Electron main
+  participant Bridge as BackendBridge
+  participant CPP as C++ backend
+
+  UI->>API: backend.call("place", args)
+  API->>Electron: ipcRenderer.invoke("backend:call", op, args)
+  Electron->>Bridge: call(op, args)
+  Bridge->>CPP: {"id":17,"op":"place",...}\n
+  CPP->>CPP: validate move and update Game
+  CPP-->>Bridge: {"id":17,"ok":true,"won":false}\n
+  Bridge-->>Electron: resolve pending request 17
+  Electron-->>API: response object
+  API-->>UI: typed response
+  UI->>API: backend.call("state")
+  API-->>UI: refreshed GameState

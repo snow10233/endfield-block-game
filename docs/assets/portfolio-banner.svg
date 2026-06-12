@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="520" viewBox="0 0 1600 520" role="img" aria-labelledby="title desc">
+  <title id="title">Endfield Block Game technical banner</title>
+  <desc id="desc">A modern technical banner showing the C++ backend, Electron Vue frontend, IPC bridge, and block puzzle board.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071018"/>
+      <stop offset="0.52" stop-color="#101826"/>
+      <stop offset="1" stop-color="#11151f"/>
+    </linearGradient>
+    <linearGradient id="lime" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d8f96a"/>
+      <stop offset="1" stop-color="#72aa26"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#80e6ff"/>
+      <stop offset="1" stop-color="#267890"/>
+    </linearGradient>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-opacity="0.045" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1600" height="520" fill="url(#bg)"/>
+  <rect width="1600" height="520" fill="url(#grid)"/>
+
+  <g opacity="0.22">
+    <path d="M64 96 H420 M64 422 H535 M1178 86 H1510 M1110 438 H1518" stroke="#7fdcff" stroke-width="1"/>
+    <path d="M108 118 h92 v92 h-92z M1378 326 h78 v78 h-78z" fill="none" stroke="#d8f96a" stroke-opacity="0.35"/>
+  </g>
+
+  <g transform="translate(92 102)">
+    <text x="0" y="0" fill="#d8f96a" font-family="Consolas, Monaco, monospace" font-size="20" letter-spacing="3">C++ ENGINE + ELECTRON/VUE DESKTOP GAME</text>
+    <text x="0" y="82" fill="#f2f7f5" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="72" font-weight="800">Endfield Block Game</text>
+    <text x="0" y="132" fill="#aeb9c6" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="26">A portfolio-ready block puzzle with native game logic, solver-backed validation, and responsive desktop UI.</text>
+
+    <g transform="translate(0 190)" font-family="Consolas, Monaco, monospace" font-size="18">
+      <rect x="0" y="0" width="128" height="42" rx="6" fill="#121d2a" stroke="#d8f96a" stroke-opacity="0.42"/>
+      <text x="22" y="27" fill="#d8f96a">C++20</text>
+      <rect x="148" y="0" width="142" height="42" rx="6" fill="#121d2a" stroke="#7fdcff" stroke-opacity="0.42"/>
+      <text x="174" y="27" fill="#7fdcff">Electron</text>
+      <rect x="310" y="0" width="104" height="42" rx="6" fill="#121d2a" stroke="#d8f96a" stroke-opacity="0.42"/>
+      <text x="340" y="27" fill="#d8f96a">Vue 3</text>
+      <rect x="434" y="0" width="128" height="42" rx="6" fill="#121d2a" stroke="#ffbf4d" stroke-opacity="0.42"/>
+      <text x="468" y="27" fill="#ffbf4d">NDJSON</text>
+    </g>
+  </g>
+
+  <g transform="translate(875 76)">
+    <rect x="0" y="0" width="578" height="368" rx="18" fill="#0d131d" stroke="#ffffff" stroke-opacity="0.12"/>
+    <rect x="28" y="28" width="248" height="312" rx="10" fill="#101927" stroke="#ffffff" stroke-opacity="0.08"/>
+    <rect x="304" y="28" width="246" height="312" rx="10" fill="#0b1018" stroke="#ffffff" stroke-opacity="0.08"/>
+
+    <text x="48" y="66" fill="#f2f7f5" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Puzzle Board</text>
+    <text x="326" y="66" fill="#f2f7f5" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Backend State</text>
+
+    <g transform="translate(48 92)">
+      <rect width="184" height="184" fill="#151d28" stroke="#ffffff" stroke-opacity="0.08"/>
+      <g stroke="#243244" stroke-width="2">
+        <path d="M46 0 V184 M92 0 V184 M138 0 V184 M0 46 H184 M0 92 H184 M0 138 H184"/>
+      </g>
+      <rect x="0" y="0" width="46" height="46" fill="url(#lime)" filter="url(#softGlow)"/>
+      <rect x="46" y="0" width="46" height="46" fill="url(#lime)"/>
+      <rect x="0" y="46" width="46" height="46" fill="url(#lime)"/>
+      <rect x="92" y="46" width="46" height="46" fill="url(#cyan)" filter="url(#softGlow)"/>
+      <rect x="92" y="92" width="46" height="46" fill="url(#cyan)"/>
+      <rect x="138" y="92" width="46" height="46" fill="url(#cyan)"/>
+      <rect x="46" y="138" width="46" height="46" fill="#272f3c"/>
+      <path d="M58 150 L80 172 M80 150 L58 172" stroke="#8d98a7" stroke-width="4" stroke-linecap="round"/>
+    </g>
+
+    <g transform="translate(326 98)" font-family="Consolas, Monaco, monospace" font-size="18">
+      <text x="0" y="0" fill="#7fdcff">{ "op": "place",</text>
+      <text x="0" y="34" fill="#aeb9c6">  "pieceId": 3,</text>
+      <text x="0" y="68" fill="#aeb9c6">  "row": 2,</text>
+      <text x="0" y="102" fill="#aeb9c6">  "col": 4,</text>
+      <text x="0" y="136" fill="#aeb9c6">  "rot": 1 }</text>
+      <path d="M0 176 H188" stroke="#d8f96a" stroke-opacity="0.45"/>
+      <text x="0" y="220" fill="#d8f96a">ok: true</text>
+      <text x="0" y="254" fill="#ffbf4d">won: false</text>
+    </g>
+  </g>
+
+  <g transform="translate(700 256)">
+    <path d="M0 0 C46 -42 86 -42 132 0" fill="none" stroke="#7fdcff" stroke-width="3" stroke-dasharray="10 10"/>
+    <path d="M132 0 l-18 -8 l6 20 z" fill="#7fdcff"/>
+    <text x="-10" y="44" fill="#aeb9c6" font-family="Consolas, Monaco, monospace" font-size="18">stdin/stdout IPC</text>
+  </g>
+</svg>

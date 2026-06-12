@@ -1,0 +1,31 @@
+flowchart TB
+  subgraph Frontend["Frontend desktop app"]
+    Renderer["Vue renderer<br/>App.vue, GameBoard, PiecePanel, LevelDesigner"]
+    Stores["Vue stores<br/>game.ts, drag.ts, audio.ts"]
+    Preload["Preload bridge<br/>window.api"]
+    Main["Electron main<br/>BrowserWindow, dialogs, BackendBridge"]
+  end
+
+  subgraph Backend["C++ backend"]
+    MainCpp["main.cpp<br/>JSON request loop"]
+    Game["Game<br/>load, place, remove, reset, win check"]
+    Board["Board + Cell<br/>grid state"]
+    Part["Part<br/>shape, color, rotation, placement"]
+    Loader["FileLoader<br/>plain-text level parser"]
+    Solver["Solver<br/>backtracking search"]
+  end
+
+  Renderer --> Stores
+  Stores --> Preload
+  Preload --> Main
+  Main -->|"stdin JSON line"| MainCpp
+  MainCpp --> Game
+  Game --> Board
+  Game --> Part
+  Game --> Loader
+  MainCpp --> Solver
+  Solver --> Game
+  MainCpp -->|"stdout JSON line"| Main
+  Main --> Preload
+  Preload --> Stores
+  Stores --> Renderer
